@@ -108,8 +108,6 @@ def main():
     # lat, lng = get_coordinates(location)
     # print(f"Coordinates of {location}: Latitude = {lat}, Longitude = {lng}")
 
-
-
     lat, lng = 42.3601, -71.0589  #boston
     radius = 3000  #in meters
     query = "food bank"
