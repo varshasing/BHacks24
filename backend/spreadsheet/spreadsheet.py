@@ -1,6 +1,12 @@
 # parse spreadsheet data, create classes from the data, and pass classes to the server (stores)
 import gspread
 from google.oauth2.service_account import Credentials
+import sys
+
+
+sys.path.append('/Users/Varsha/Desktop/Boston University/Junior/BHACKS/BHacks24/BHacks24/backend/')
+
+import map
 
 # Define the scope
 scopes = [
@@ -28,27 +34,30 @@ except Exception as e:
 
 # Define the class for the spreadsheet data
 class Service:
-    def __init__(self, name, servicetype, extrafilters, demographic, website, summary, address, addressnotes,coordinates, neighborhoods, hours, phone, languages, googlelink,URAverifed):
+    def __init__(self, name, servicetype, extrafilters, demographic, website, summary, address, addressnotes, coordinates, neighborhoods, hours, phone, languages, URAverifed):
         self.name = name
         self.servicetype = servicetype
         self.extrafilters = extrafilters
         self.demographic = demographic
         self.website = website
         self.summary = summary
-        self.address = address
+        self.address = address# has to be a list of coordinates since there can be multiple locations
         self.addressnotes = addressnotes
         self.coordinates = coordinates
         self.neighborhoods = neighborhoods
         self.hours = hours
         self.phone = phone
         self.languages = languages
-        self.googlelink = googlelink
         self.URAverifed = URAverifed
 
 # I need to create a list of Service objects from the data
 services = []
 for row in data:
-    service = Service(row["Name of Organization "], row["Service Type"], row["Extra Filters"], row["Who are these services for? (refugees, asylees, TPS, parolees, any status, etc.)"], row["Website"], row["Summary of Services"], row["Address"], row["Coordinates (for mapping later on?)"], row["Neighborhood"], row["Hours"], row["Phone Number (for public to contact)"], row["Services offered in these languages"], URAverifed=True)
+    address_list = row["Address"].split(";")
+    coordinate_list = []
+    for address in address_list:
+        if len(address) > 3:
+            coordinates = map.get_coordinates(address)
+            coordinate_list.append(coordinates)
+    service = Service(row["Name of Organization "], row["Service Type"], row["Extra Filters"], row["Who are these services for? (refugees, asylees, TPS, parolees, any status, etc.)"], row["Website"], row["Summary of Services"], address_list, row["Address Notes"], coordinate_list, row["Neighborhood"], row["Hours"], row["Phone Number (for public to contact)"], row["Services offered in these languages"], URAverifed=True)
     services.append(service)
-
-
