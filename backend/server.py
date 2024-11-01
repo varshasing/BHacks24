@@ -1,36 +1,56 @@
-from fastapi import FastAPI, HTTPException, Query
-from typing import Optional
-from map import get_place_details, find_places, get_coordinates  # Assuming your functions are in `map.py`
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from typing import List
+from spreadsheet.service import Service
+from spreadsheet.spreadsheet import parse_spreadsheet
 
+from map import find_places
+
+# FastAPI instance
 app = FastAPI()
 
-# Endpoint to get place details by place_id
-@app.get("/place_details/{place_id}")
-async def place_details(place_id: str):
-    data = get_place_details(place_id)
-    if not data:
-        raise HTTPException(status_code=404, detail="Place not found")
-    return data
+# Pydantic model for request/response validation
+class ServiceRequest(BaseModel):
+    query: str
+    lat: float
+    lng: float
+    radius: int
 
-# Endpoint to find places based on a search query, location, and radius
-@app.get("/find_places")
-async def find_places_endpoint(
-    query: str,
-    lat: float = Query(..., description="Latitude of the location"),
-    lng: float = Query(..., description="Longitude of the location"),
-    radius: int = Query(500, description="Search radius in meters")
-):
-    data = find_places(query, lat, lng, radius)
-    if not data:
-        raise HTTPException(status_code=404, detail="No places found")
-    return data
+# Endpoint to parse spreadsheet and return list of Service objects
+@app.post("/get_spreadsheet", response_model=List[Service])
+async def get_spreadsheet(file_path: str):  # Replace with your file handling logic
+    try:
+        services = parse_spreadsheet(file_path)
+        return services
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-# Endpoint to get coordinates based on an address
-@app.get("/coordinates")
-async def coordinates(location: str):
-    coordinates = get_coordinates(location)
-    if not coordinates:
-        raise HTTPException(status_code=404, detail="Location not found")
-    return {"latitude": coordinates[0], "longitude": coordinates[1]}
+# Endpoint to find places and return list of Service objects
+@app.post("/find_places", response_model=List[Service])
+async def get_googlemap(service_request: ServiceRequest):
+    try:
+        services = find_places(service_request.query, service_request.lat, service_request.lng, service_request.radius)
+        return services
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-#uvicorn server:app --reload
+
+# Combined endpoint to get both lists of Service objects
+@app.post("/combined_services", response_model=List[Service])
+async def combined_services(service_request: ServiceRequest, file_path: str):
+    try:
+        # Get services from spreadsheet
+        spreadsheet_services = await parse_spreadsheet(file_path)
+        
+        # Get services from find_places
+        places_services = await find_places(service_request)
+
+        # Combine the two lists
+        combined_services = spreadsheet_services + places_services
+        
+        return combined_services
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# t run the server, use the command:
+# uvicorn server:app --reload

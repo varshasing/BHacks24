@@ -40,7 +40,9 @@ def find_places(query, lat, lng, radius):
                 place_details = get_place_details(place_id)
                 if place_details:
                     places.append(place_details)
-            return places
+            
+            services = map_to_service(places, query)
+            return services
         else:
             print("Error:", data['status'])
     else:
@@ -48,12 +50,12 @@ def find_places(query, lat, lng, radius):
 
 
 #helper function for class builder, maps the json data to a service object
-def map_to_service(places):
+def map_to_service(places, query):
     services = []
     for place_data in places:
         service = Service(
             name=place_data.get("name"),
-            servicetype="", 
+            servicetype=query, 
             extrafilters="", 
             demographic="", 
             website=place_data.get("website"),
@@ -112,20 +114,11 @@ def main():
     radius = 3000  #in meters
     query = "food bank"
 
-    places = find_places(query, lat, lng, radius)
-    
-    # for place in places:
-    #     name = place.get('name', 'N/A')
-    #     address = place.get('formatted_address', 'N/A')
-    #     coordinates = place['geometry']['location']
-    #     phonenumber = place.get('formatted_phone_number')
-    #     latitude = coordinates['lat']
-    #     longitude = coordinates['lng']
-    #     print(f"Name: {name}, Address: {address}, Coordinates: ({latitude}, {longitude}), Phone number: {phonenumber}")
-
-    services = map_to_service(places)
+    services = find_places(query, lat, lng, radius)
     for service in services:
         print(service.__dict__)
+
+    
 
 if __name__ == "__main__":
     main()
