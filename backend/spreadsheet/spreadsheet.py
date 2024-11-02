@@ -42,5 +42,6 @@ for row in data:
         if len(address) > 3:
             coordinates = map.get_coordinates(address)
             coordinate_list.append(coordinates)
+            
     service = Service(row["Name of Organization "], row["Service Type"], row["Extra Filters"], row["Who are these services for? (refugees, asylees, TPS, parolees, any status, etc.)"], row["Website"], row["Summary of Services"], address_list, row["Address Notes"], coordinate_list, row["Neighborhood"], row["Hours"], row["Phone Number (for public to contact)"], row["Services offered in these languages"], URAverifed=True, googlelink=False)
     services.append(service)
