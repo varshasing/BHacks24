@@ -1,5 +1,6 @@
 import requests
 import json
+from spreadsheet.service import Service
 
 def load_secrets():
     with open("secrets.json") as secrets_file:
@@ -11,7 +12,7 @@ def get_place_details(place_id):
     url = f"https://maps.googleapis.com/maps/api/place/details/json"
     params = {
         "place_id": place_id,
-        "fields": "name,formatted_address,geometry,opening_hours,website,formatted_phone_number",
+        "fields": "name,formatted_address,geometry,opening_hours,website,formatted_phone_number,editorial_summary,url",
         "key": api_key
     }
     
@@ -45,6 +46,31 @@ def find_places(query, lat, lng, radius):
     else:
         print("Request failed:", response.status_code)
 
+
+#helper function for class builder, maps the json data to a service object
+def map_to_service(places):
+    services = []
+    for place_data in places:
+        service = Service(
+            name=place_data.get("name"),
+            servicetype="", 
+            extrafilters="", 
+            demographic="", 
+            website=place_data.get("website"),
+            summary=place_data.get("editorial_summary"), 
+            address=place_data.get("formatted_address"),
+            coordinates=place_data.get("geometry", {}).get("location"),
+            neighborhoods="", 
+            hours="",
+            phone=place_data.get("formatted_phone_number"),
+            languages="English", 
+            googlelink=place_data.get("url"),
+            URAverifed=False  
+        )
+        services.append(service)
+    return services
+    
+    
 
 
 #helper function for class builder
@@ -81,19 +107,25 @@ def main():
     # print(f"Coordinates of {location}: Latitude = {lat}, Longitude = {lng}")
 
 
+
     lat, lng = 42.3601, -71.0589  #boston
-    radius = 500  #in meters
+    radius = 3000  #in meters
     query = "food bank"
 
     places = find_places(query, lat, lng, radius)
-    for place in places:
-        name = place.get('name', 'N/A')
-        address = place.get('formatted_address', 'N/A')
-        coordinates = place['geometry']['location']
-        phonenumber = place.get('formatted_phone_number')
-        latitude = coordinates['lat']
-        longitude = coordinates['lng']
-        print(f"Name: {name}, Address: {address}, Coordinates: ({latitude}, {longitude}), Phone number: {phonenumber}")
+    
+    # for place in places:
+    #     name = place.get('name', 'N/A')
+    #     address = place.get('formatted_address', 'N/A')
+    #     coordinates = place['geometry']['location']
+    #     phonenumber = place.get('formatted_phone_number')
+    #     latitude = coordinates['lat']
+    #     longitude = coordinates['lng']
+    #     print(f"Name: {name}, Address: {address}, Coordinates: ({latitude}, {longitude}), Phone number: {phonenumber}")
+
+    services = map_to_service(places)
+    for service in services:
+        print(service.__dict__)
 
 if __name__ == "__main__":
     main()
