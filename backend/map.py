@@ -1,6 +1,6 @@
 import requests
 import json
-from spreadsheet.spreadsheet import Service
+from spreadsheet.service import Service
 
 def load_secrets():
     with open("secrets.json") as secrets_file:
@@ -59,7 +59,6 @@ def map_to_service(places):
             website=place_data.get("website"),
             summary=place_data.get("editorial_summary"), 
             address=place_data.get("formatted_address"),
-            addressnotes='',
             coordinates=place_data.get("geometry", {}).get("location"),
             neighborhoods="", 
             hours="",
