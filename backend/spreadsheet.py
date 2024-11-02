@@ -1,7 +1,7 @@
 # parse spreadsheet data, create classes from the data, and pass classes to the server (stores)
 import gspread
 from google.oauth2.service_account import Credentials
-import Service
+from service import Service
 import map
 
 

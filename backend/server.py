@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from typing import List
 from service import Service
-from spreadsheet import parse_spreadsheet
+from spreadsheet import fetch_and_process_spreadsheet_data
 from map import find_places
 
 
@@ -11,7 +11,7 @@ app = FastAPI()
 
 @app.get("/allservices", response_model=List[Service])
 async def get_combined_services(query: str, lat: float, lng: float, radius: int):
-    spreadsheet_services = parse_spreadsheet()
+    spreadsheet_services = fetch_and_process_spreadsheet_data()
     places_services = find_places(query, lat, lng, radius)
 
     combined_services = spreadsheet_services + places_services

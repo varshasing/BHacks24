@@ -1,6 +1,6 @@
 import requests
 import json
-from spreadsheet.service import Service
+from service import Service
 
 def load_secrets():
     with open("secrets.json") as secrets_file:
