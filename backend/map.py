@@ -80,12 +80,12 @@ def main():
     # lat, lng = get_coordinates(location)
     # print(f"Coordinates of {location}: Latitude = {lat}, Longitude = {lng}")
 
-    lat, lng = 42.3601, -71.0589  # Example: Boston, MA
-    radius = 500  # Search within 5 km
+
+    lat, lng = 42.3601, -71.0589  #boston
+    radius = 500  #in meters
     query = "food bank"
 
     places = find_places(query, lat, lng, radius)
-    print(places)
     for place in places:
         name = place.get('name', 'N/A')
         address = place.get('formatted_address', 'N/A')
@@ -93,10 +93,7 @@ def main():
         phonenumber = place.get('formatted_phone_number')
         latitude = coordinates['lat']
         longitude = coordinates['lng']
-        openhours = place.get('opening_hours')
-        # print(f"open hours: {openhours}")
-
-        # print(f"Name: {name}, Address: {address}, Coordinates: ({latitude}, {longitude}), Phone number: {phonenumber}")
+        print(f"Name: {name}, Address: {address}, Coordinates: ({latitude}, {longitude}), Phone number: {phonenumber}")
 
 if __name__ == "__main__":
     main()
