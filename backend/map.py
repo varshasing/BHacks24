@@ -1,5 +1,6 @@
 import requests
 import json
+from .spreadsheet import Service
 
 def load_secrets():
     with open("secrets.json") as secrets_file:
@@ -46,6 +47,28 @@ def find_places(query, lat, lng, radius):
         print("Request failed:", response.status_code)
 
 
+def map_to_service(places):
+    services = []
+    for place in places:
+        service = Service(
+            name=place_data.get("name"),
+            servicetype="Service Type Here", 
+            extrafilters="Extra Filters Here", 
+            demographic="Demographic Here", 
+            website=place_data.get("website"),
+            summary="Summary Here", 
+            address=place_data.get("formatted_address"),
+            coordinates=place_data.get("geometry", {}).get("location"),
+            neighborhoods="Neighborhood Info Here", 
+            hours=place_data.get("opening_hours"),
+            phone=place_data.get("formatted_phone_number"),
+            languages="Languages Here", 
+            URAverifed=False  
+        )
+        services.append(service)
+    return services
+    
+    
 
 #helper function for class builder
 #receives a string, and returns a coordinate pair
@@ -86,6 +109,7 @@ def main():
     query = "food bank"
 
     places = find_places(query, lat, lng, radius)
+    
     for place in places:
         name = place.get('name', 'N/A')
         address = place.get('formatted_address', 'N/A')
@@ -94,7 +118,6 @@ def main():
         latitude = coordinates['lat']
         longitude = coordinates['lng']
         print(f"Name: {name}, Address: {address}, Coordinates: ({latitude}, {longitude}), Phone number: {phonenumber}")
-
 if __name__ == "__main__":
     main()
 
