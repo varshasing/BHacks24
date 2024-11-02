@@ -13,6 +13,7 @@ import type { Marker } from '@googlemaps/markerclusterer';
 import google_maps_api_key from '../secrets';
 import { Circle } from './components/circle';
 import Profile from './components/profile';
+import BottomBar from './components/bottombar';
 
 type Poi = {
   key: string;
@@ -51,7 +52,9 @@ const App = () => {
       >
         <PoiMarkers pois={locations} onMarkerClick={setSelectedLocation} />
       </Map>
-
+      <div style={{justifyContent:"center", alignItems:"center"}}>
+        <BottomBar />
+      </div>
       {selectedLocation && (
         <Profile
           name={selectedLocation.name}
