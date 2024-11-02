@@ -1,13 +1,9 @@
 # parse spreadsheet data, create classes from the data, and pass classes to the server (stores)
 import gspread
 from google.oauth2.service_account import Credentials
-from service import Service
-import sys
-import os
+import Service
+import map
 
-# Append the parent directory to the path for module imports
-sys.path.append(os.path.abspath(".."))
-import map  # Ensure map.py is in the parent directory
 
 def fetch_and_process_spreadsheet_data(sheet_name, json_key_path):
     """

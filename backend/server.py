@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from typing import List
-from spreadsheet.service import Service
-from spreadsheet.spreadsheet import parse_spreadsheet
+from service import Service
+from spreadsheet import parse_spreadsheet
 from map import find_places
 
 
