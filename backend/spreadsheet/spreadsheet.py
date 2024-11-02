@@ -59,14 +59,13 @@ def fetch_and_process_spreadsheet_data(sheet_name, json_key_path):
             row["Website"],
             row["Summary of Services"],
             address_list,
-            row["Address Notes"],
             coordinate_list,
             row["Neighborhood"],
             row["Hours"],
             row["Phone Number (for public to contact)"],
             row["Services offered in these languages"],
+            googlelink=False,
             URAverifed=True,
-            googlelink=False
         )
         services.append(service)
     
