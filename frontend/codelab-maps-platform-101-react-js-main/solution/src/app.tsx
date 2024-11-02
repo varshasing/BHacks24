@@ -16,20 +16,20 @@ import Profile from './components/profile';
 import BottomBar from './components/bottombar';
 
 type Poi = {
-  key: string;
   location: google.maps.LatLngLiteral;
   name: string;
-  type: string;
+  services: string[];
   languages: string[];
   phone: string;
   address: string;
   website: string;
+  demographics: string;
+  summary: string;
+  hours: string;
 };
 
 const locations: Poi[] = [
-  { key: 'operaHouse', location: { lat: -33.8567844, lng: 151.213108 }, name: 'Opera House', type: 'Landmark', languages: ['English'], phone: '123-456-7890', address: 'Sydney, NSW', website: 'https://example.com' },
-  { key: 'tarongaZoo', location: { lat: -33.8472767, lng: 151.2188164 }, name: 'Taronga Zoo', type: 'Zoo', languages: ['English'], phone: '123-456-7891', address: 'Bradleys Head Rd, Mosman', website: 'https://example.com' },
-  // Add more entries as needed
+  { location: { lat: -33.8567844, lng: 151.213108 }, name: 'Catholic Charities', services: ['Education', 'Housing/Shelter', 'Food', 'Legal'], summary: 'family and youth services', address: '275 W Broadway, Boston, MA 02127', hours: '7:30am - 6pm', demographics: 'Any Status', languages: ['English'], website: 'https://www.ccab.org/what-we-do/', phone: '617-464-8500'}
 ];
 
 const App = () => {
@@ -58,11 +58,14 @@ const App = () => {
       {selectedLocation && (
         <Profile
           name={selectedLocation.name}
-          type={selectedLocation.type}
+          services={selectedLocation.services}
           languages={selectedLocation.languages}
           phone={selectedLocation.phone}
           address={selectedLocation.address}
           website={selectedLocation.website}
+          demographics={selectedLocation.demographics}
+          summary={selectedLocation.summary}
+          hours={selectedLocation.hours}
           onBack={handleBack} // Pass handleBack as a prop to Profile
         />
       )}
