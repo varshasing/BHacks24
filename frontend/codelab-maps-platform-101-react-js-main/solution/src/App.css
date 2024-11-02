@@ -1,0 +1,8 @@
+.marker-label {
+    position: absolute;
+    transform: translateY(5px);
+    /* Adjust the offset as needed */
+    text-align: center;
+    font-size: 12px;
+    color: black;
+}
