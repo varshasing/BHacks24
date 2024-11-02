@@ -27,7 +27,6 @@ try:
 
     # Retrieve all data from the sheet
     data = sheet.get_all_records()
-    #print("Data from sheet:", data)
 
 except Exception as e:
     print("An error occurred:", e)
@@ -41,8 +40,7 @@ class Service:
         self.demographic = demographic
         self.website = website
         self.summary = summary
-        self.address = address# has to be a list of coordinates since there can be multiple locations
-
+        self.address = address  # has to be a list of coordinates since there can be multiple locations
         self.coordinates = coordinates
         self.neighborhoods = neighborhoods
         self.hours = hours
@@ -51,7 +49,7 @@ class Service:
         self.URAverifed = URAverifed
         self.googlelink = googlelink
 
-# I need to create a list of Service objects from the data
+# Create a list of Service objects from the data
 services = []
 for row in data:
     address_list = row["Address"].split(";")
