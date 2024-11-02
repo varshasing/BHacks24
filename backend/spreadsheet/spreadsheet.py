@@ -28,14 +28,12 @@ try:
 
     # Retrieve all data from the sheet
     data = sheet.get_all_records()
-    #print("Data from sheet:", data)
 
 except Exception as e:
     print("An error occurred:", e)
 
 
-
-# I need to create a list of Service objects from the data
+# Create a list of Service objects from the data
 services = []
 for row in data:
     address_list = row["Address"].split(";")
@@ -44,5 +42,6 @@ for row in data:
         if len(address) > 3:
             coordinates = map.get_coordinates(address)
             coordinate_list.append(coordinates)
+            
     service = Service(row["Name of Organization "], row["Service Type"], row["Extra Filters"], row["Who are these services for? (refugees, asylees, TPS, parolees, any status, etc.)"], row["Website"], row["Summary of Services"], address_list, row["Address Notes"], coordinate_list, row["Neighborhood"], row["Hours"], row["Phone Number (for public to contact)"], row["Services offered in these languages"], URAverifed=True, googlelink=False)
     services.append(service)
