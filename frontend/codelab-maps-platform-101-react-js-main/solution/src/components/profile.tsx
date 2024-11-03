@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Box, Typography, IconButton, Chip, Divider, Link, Card, CardContent, Button } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -18,6 +18,7 @@ interface ProfileProps {
   hours?: string;       // Make optional
   upvote: number;
   onBack: () => void;
+  onUpvote: (id: string, newUpvoteCount: number) => void;
 }
 
 const Profile: React.FC<ProfileProps> = ({
@@ -33,7 +34,35 @@ const Profile: React.FC<ProfileProps> = ({
   phone,
   upvote,
   onBack,
+  onUpvote,
 }) => {
+  const [currentUpvote, setCurrentUpvote] = useState(upvote);
+  const [upvoteClicked, setUpvoteClicked] = useState(false); // Track if upvote has been clicked
+
+  const handleUpvote = async () => {
+    if (upvoteClicked) return;
+
+    const newUpvoteCount = currentUpvote + 1;
+    setCurrentUpvote(newUpvoteCount);
+    setUpvoteClicked(true);
+
+    onUpvote(ID, newUpvoteCount);
+
+    try {
+      const url = `${BACKEND_BASE_URL}/reviews?ID=${encodeURIComponent(ID)}&upvote=${encodeURIComponent(currentUpvote + 1)}`;
+      const response = await fetch(url, { method: 'POST' });
+
+      if (!response.ok) {
+        console.error('Failed to upvote on the backend');
+      } else {
+        onUpvote(ID, currentUpvote + 1); // Inform App about the new upvote count
+      }
+    } catch (error) {
+      console.error('Error during upvote:', error);
+    }
+  };
+  
+
   return (
     <Box
       sx={{
@@ -114,16 +143,18 @@ const Profile: React.FC<ProfileProps> = ({
           </CardContent>
         </Card>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mt: 3 }}>
-  <Typography variant="h6" sx={{ mr: 1 }}>
-  </Typography>
-  <Button
-    variant="contained"
-    color="primary"
-    startIcon={<FontAwesomeIcon icon={faThumbsUp} />}
-  >
-    {upvote}
-  </Button>
-</Box>
+      <Typography variant="h6" sx={{ mr: 1 }}>
+      </Typography>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={handleUpvote}
+        startIcon={<FontAwesomeIcon icon={faThumbsUp} />}
+        disbled={upvoteClicked}
+      >
+        {currentUpvote}
+      </Button>
+      </Box>
       </Box>
     </Box>
   );

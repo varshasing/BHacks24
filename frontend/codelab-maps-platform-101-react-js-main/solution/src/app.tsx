@@ -114,6 +114,14 @@ const App = () => {
     setSelectedLocation(null);
   };
 
+  const updateUpvote = (id: string, newUpvoteCount: number) => {
+    setLocations(prevLocations =>
+      prevLocations.map(location =>
+        location.ID === id ? { ...location, upvote: newUpvoteCount } : location
+      )
+    );
+  };
+
   return (
     <APIProvider apiKey={google_maps_api_key} onLoad={() => console.log('Maps API has loaded.')}>
       <MapContainer
@@ -136,6 +144,7 @@ const App = () => {
           hours={selectedLocation.hours}
           upvote={selectedLocation.upvote}
           onBack={handleBack}
+          onUpvote={updateUpvote}
         />
       )}
 
