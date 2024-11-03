@@ -2,6 +2,9 @@ import React, { useState, ChangeEvent } from 'react';
 import { Box, TextField, List, ListItem, ListItemText, Typography, Slider, Button, FormControlLabel, Checkbox } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { Dispatch, SetStateAction } from 'react';
+import { BACKEND_BASE_URL } from './base_urls';
+import { Location } from './MapContainer';
+import { Poi } from '../app';
 interface SearchResult {
     displayName: string;
     latitude: string;
@@ -31,14 +34,21 @@ async function searchOpenStreetMap(query: string): Promise<SearchResult[]> {
     }
 }
 
+
 interface BottomBarProps {
+    mapCenter: google.maps.LatLngLiteral | null;
     setMapCenter: (latitude: number, longitude: number) => void;
     setRadius: (radius: number) => void;
     radius: number;
     setShowButtons: Dispatch<SetStateAction<boolean>>;
+    updateLocationPins: (query: string, lat: number, lng: number, radius: number, setLocations: React.Dispatch<React.SetStateAction<Poi[]>>) => Promise<void>;
+    setLocations: React.Dispatch<React.SetStateAction<Poi[]>>;
+
 }
 
-const BottomBar: React.FC<BottomBarProps> = ({ setMapCenter, setRadius, radius, setShowButtons }) => {
+
+
+const BottomBar: React.FC<BottomBarProps> = ({ mapCenter, setMapCenter, setRadius, radius, setShowButtons, updateLocationPins, setLocations }) => {
     const [focused, setFocused] = useState<boolean>(false);
     const [searchingFocus, setSearchingFocus] = useState<boolean>(false);
     const [query, setQuery] = useState<string>('');
@@ -65,6 +75,9 @@ const BottomBar: React.FC<BottomBarProps> = ({ setMapCenter, setRadius, radius, 
 
     const handleSearchOptions = () => {
         console.log(selectedOptions);
+        if(mapCenter){
+            console.log(updateLocationPins(selectedOptions[0], mapCenter.lat, mapCenter.lng, radius, setLocations));
+        }
         handleCancel();
     };
 
