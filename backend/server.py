@@ -2,13 +2,13 @@ from fastapi import FastAPI, HTTPException
 from spreadsheet import fetch_and_process_spreadsheet_data, hash_organization_name
 from map import find_places
 from typing import List
-from database import create_connection
+from database import create_connection, get_upvote_by_id, create_table
 import json
 from models import ServiceModel, ServiceInput, ReviewModel
 from starlette.middleware.cors import CORSMiddleware
 import ast
 import math
-from models import ServiceModel, ReviewModel, ServiceReviewsModel, ServiceInput
+from models import ServiceModel, ReviewModel, ServiceInput
 from map import remove_duplicates
 
 
@@ -22,52 +22,108 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
+
+@app.on_event("startup")
+async def startup_event():
+    create_table()
+
 @app.get("/services", response_model=List[ServiceModel])
-#fix it so that it can take multiple query parameters
 async def get_combined_services(query: str, lat: float, lng: float, radius: float):
     # Convert miles to meters
-    radius = radius * 1609.34
+    radius_meters = radius * 1609.34
 
+    # Fetch services from the database
+    conn = create_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM services")
+    db_rows = cursor.fetchall()
+
+    db_services = [
+        parse_service_row(dict(zip([column[0] for column in cursor.description], row)))
+        for row in db_rows
+    ]
+
+    # Fetch services from the spreadsheet
     spreadsheet_services = fetch_and_process_spreadsheet_data(
-        'UrbanRefugeAidServices', 
+        'UrbanRefugeAidServices',
         'balmy-virtue-440518-c9-1dbeaecb35aa.json',
         lat,
         lng,
         radius,
         query
     )
-    places_services = find_places(query, lat, lng, radius)
-    combined_services = remove_duplicates(spreadsheet_services, places_services)
 
-    services_dict = [
-        ServiceModel(
-            servicetype=[service.servicetype] if isinstance(service.servicetype, str) else service.servicetype,
-            extrafilters=service.extrafilters.split(', ') if isinstance(service.extrafilters, str) else (service.extrafilters or []),
-            languages=[service.languages] if isinstance(service.languages, str) else (service.languages or []),
-            googlelink=str(service.googlelink) if isinstance(service.googlelink, bool) else service.googlelink,
-            **{k: v for k, v in vars(service).items() if k not in {'servicetype', 'extrafilters', 'languages', 'googlelink'}}
-        )
-        for service in combined_services
-    ]
-    
-    return services_dict
+    # Fetch services from external API (if applicable)
+    query_services = find_places(query, lat, lng, radius)  
+
+    # Combine all services
+    combined_services = db_services  + query_services + spreadsheet_services
+
+    # Filter services based on location
+    filtered_services = []
+    for service in combined_services:
+        if service.coordinates:
+            print(type(service.coordinates))
+            if isinstance(service.coordinates, list):
+                service_lat = float(service.coordinates[0][0])
+                service_lng = float(service.coordinates[0][1])
+            elif isinstance(service.coordinates, tuple):
+                service_lat = float(service.coordinates[0])
+                service_lng = float(service.coordinates[1])
+            distance = calculate_distance(lat, lng, service_lat, service_lng)
+
+            # Check if within the radius
+            if distance <= radius_meters:
+                if query:
+                    # Check if the service name matches any of the query strings
+                    if any(q.lower() in service.name.lower() for q in query):
+                        if isinstance(service.coordinates[0], str):
+                            coordinatess = (float(service.coordinates[0]), float(service.coordinates[1]))
+                            service.coordinates = coordinatess
+
+                        filtered_services.append(service)
+                else:
+                    filtered_services.append(service)
+        else:
+            print(f"Service {service.name} has invalid coordinates: {service.coordinates}")
+
+    conn.close()
+    return filtered_services
+
 
 
 # Helper function to parse JSON fields from a database row
 def parse_service_row(row: dict) -> ServiceModel:
-    # Ensure coordinates are parsed as a tuple from string format
-    if 'coordinates' in row:
-        coordinates_str = row['coordinates']
-        # Safely convert the string representation to a tuple
-        coordinates = tuple(ast.literal_eval(coordinates_str))
+    coordinates_str = row.get('coordinates', '[]')
+    if coordinates_str:
+        try:
+            coordinates_list = json.loads(coordinates_str) 
+            if isinstance(coordinates_list, list):
+                coordinates = (coordinates_list[0],  coordinates_list[1]) # Extract the tuple
+            else:
+                coordinates = coordinates_list
+        except (json.JSONDecodeError, ValueError):
+            coordinates = ()  # Fallback to empty tuple if parsing fails
     else:
-        coordinates = ()
+        coordinates = ()  # Fallback if coordinates_str is empty
+    print(f"Deserialized coordinates: {coordinates}")  # Debugging output
+    
+    
+    services_str = row.get("servicetype", "[]")
+    try:
+        servicetype = json.loads(services_str)
+        print(f"Deserialized servicetype: {servicetype}")  # Debugging output
+    except json.JSONDecodeError as e:
+        print(f"Error decoding services JSON: {e}")  # Error details
+        servicetype = []
+
 
     service = ServiceModel(
-        ID= str(row['id']),
+        ID= str(row['ID']),
         name=row['name'],
         coordinates=coordinates, 
-        servicetype=json.loads(row["services"]) if row.get("services") else [],  
+        servicetype=servicetype,  
         extrafilters=None, 
         demographic=None, 
         website=row["website"] if row.get("website") else None,
@@ -78,7 +134,8 @@ def parse_service_row(row: dict) -> ServiceModel:
         phone=row["phone"] if row.get("phone") else None,
         languages=json.loads(row["languages"]) if row.get("languages") else [], 
         googlelink=None, 
-        source="User Input"
+        source="User Input",
+        upvote=get_upvote_by_id(str(row['ID']))
     )
     return service
 
@@ -103,7 +160,6 @@ async def get_all_services(lat: float, lng: float, radius: float):
         if service.coordinates and len(service.coordinates) == 2:
             service_lat = float(service.coordinates[0])  
             service_lng = float(service.coordinates[1])  
-            print(type(service_lat), type(service.coordinates[0]), service.coordinates[0])
             distance = calculate_distance(lat, lng, service_lat, service_lng)
 
             if distance <= radius:
@@ -143,8 +199,9 @@ async def add_service(service_input: ServiceInput):
         raise HTTPException(status_code=400, detail="Invalid coordinates format")
 
     # Create an instance of ServiceModel with the input data
+    
     service = ServiceModel(
-        ID=str(service_id),
+        ID= str(service_id),
         name=service_input.name,
         servicetype=service_input.services,  # Map 'services' to 'servicetype'
         extrafilters=None,  # Handle as needed
@@ -158,8 +215,10 @@ async def add_service(service_input: ServiceInput):
         summary=service_input.notes,  # Assuming 'notes' maps to 'summary'
         demographic=None,  # Handle as needed
         googlelink=None,  # Handle as needed
-        source="User Input"
+        source="User Input",
+        upvote = get_upvote_by_id(str(service_id))
     )
+
 
     conn = create_connection()
     cursor = conn.cursor()
@@ -167,8 +226,8 @@ async def add_service(service_input: ServiceInput):
         '''
         INSERT INTO services (ID, name, servicetype, extrafilters, demographic, website,
                               summary, address, coordinates, neighborhoods, hours, phone,
-                              languages, googlelink, source)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                              languages, googlelink, source, upvote)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''',
         (
             service.ID,
@@ -185,10 +244,17 @@ async def add_service(service_input: ServiceInput):
             service.phone,
             json.dumps(service.languages), 
             service.googlelink,
-            service.source
+            service.source,
+            service.upvote
         )
     )
     conn.commit()
+    cursor.execute("SELECT servicetype FROM services WHERE ID=?", (service.ID,))
+    stored_servicetype = cursor.fetchone()
+    if stored_servicetype:
+        servicetype_list = json.loads(stored_servicetype[0])  # Deserialize JSON string
+    print("Deserialized servicetype:", servicetype_list)  # Should print: ['Legal']
+
     conn.close()
     return {"message": "Service added successfully"}
 
@@ -219,18 +285,20 @@ async def add_review(review: ReviewModel):
 
     return {"message": "Upvote added successfully"}
 
-@app.get("/reviews/", response_model=List[ReviewModel])
-async def get_all_reviews():
+@app.get("/reviews/{review_id}", response_model=ReviewModel)
+async def get_review(review_id: str):
     conn = create_connection()
     cursor = conn.cursor()
-    
-    # Select ID and upvote from the reviews table
-    cursor.execute("SELECT ID, upvote FROM reviews")
-    rows = cursor.fetchall()
+
+    # Select ID and upvote from the reviews table for the specific ID
+    cursor.execute("SELECT ID, upvote FROM reviews WHERE ID = ?", (review_id,))
+    row = cursor.fetchone()
     conn.close()
 
-    # Create a list of ReviewModel instances
-    reviews = [
-        ReviewModel(ID=row[0], upvote=row[1]) for row in rows
-    ]
-    return reviews
+    # If no review is found, raise a 404 error
+    if row is None:
+        review = ReviewModel(ID=review_id, upvote=0)
+
+    # Create a ReviewModel instance with the retrieved data
+    review = ReviewModel(ID=row[0], upvote=row[1])
+    return review

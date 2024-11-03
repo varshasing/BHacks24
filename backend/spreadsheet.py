@@ -83,12 +83,21 @@ def fetch_and_process_spreadsheet_data(sheet_name, json_key_path, lat, lng, radi
         
         org_name = row["Name of Organization"]
         unique_id = hash_organization_name(org_name)
+        servicetypes = row["Service Type"].split(", ")
+        extrafilters = row["Extra Filters"].split(", ")
+        languages = row["Services offered in these languages"].split(", ")
+        if isinstance(servicetypes, str):
+            servicetypes = [servicetypes]
+        if isinstance(extrafilters, str):
+            extrafilters = [extrafilters]
+        if isinstance(languages, str):
+            languages = [languages]
 
         service = Service(
             ID=unique_id, 
             name=org_name,
-            servicetype=row["Service Type"],
-            extrafilters=row["Extra Filters"],
+            servicetype=servicetypes,
+            extrafilters=[row["Extra Filters"]],
             demographic=row["Who are these services for? (refugees, asylees, TPS, parolees, any status, etc.)"],
             website=row["Website"],
             summary=row["Summary of Services"],
@@ -98,7 +107,7 @@ def fetch_and_process_spreadsheet_data(sheet_name, json_key_path, lat, lng, radi
             hours=row["Hours"],
             phone=row["Phone Number (for public to contact)"],
             languages=row["Services offered in these languages"],
-            googlelink=False,
+            googlelink="",
             source="Urban Refuge Aid"
         )
         services.append(service)

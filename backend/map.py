@@ -31,7 +31,7 @@ def remove_duplicates(sheets_services, query_services):
 
     # add if the coordinates are not in merged services, url is not false
     for service in query_services:
-        if service.coordinates[0] not in [s.coordinates[0] for s in merged_services] and service.coordinates[1] not in [s.coordinates[1] for s in merged_services] and service.ID:
+        if service.coordinates[0] not in [s.coordinates[0] for s in merged_services] and service.ID:
             merged_services.append(service)
 
     return merged_services

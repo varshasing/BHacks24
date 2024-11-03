@@ -17,6 +17,7 @@ class ServiceModel(BaseModel):
     languages: List[str]
     googlelink: Optional[str] = None
     source: Optional[str] = None
+    upvote: int = 0
 
     class Config:
         orm_mode = True
