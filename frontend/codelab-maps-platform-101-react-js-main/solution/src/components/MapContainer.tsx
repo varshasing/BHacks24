@@ -13,27 +13,48 @@ import { Button } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMap, faEye, faEdit } from '@fortawesome/free-solid-svg-icons';
 import AddLocationForm from './addLocationForm';
+import { Poi } from '../app';
+export interface Location {
+  ID: string;
+  name: string;
+  servicetype: string[];
+  extrafilters: string[];
+  demographic: string;
+  website: string;
+  summary: string;
+  address: string[];
+  coordinates: string[];
+  neighborhoods: string;
+  hours: string;
+  phone: string;
+  languages: string[];
+  googlelink: string;
+  source: string;
+}
 
-type Poi = {
-    location: google.maps.LatLngLiteral;
-    name: string;
-    services: string[];
-    languages: string[];
-    phone: string;
-    address: string;
-    website: string;
-    demographics: string;
-    summary: string;
-    hours: string;
-};
+
+// type Poi = {
+//     location: google.maps.LatLngLiteral;
+//     name: string;
+//     services: string[];
+//     languages: string[];
+//     phone: string;
+//     address: string;
+//     website: string;
+//     demographics: string;
+//     summary: string;
+//     hours: string;
+// };
 
 interface MapContainerProps {
     locations: Poi[];
+  updateLocationPins: (query: string, lat: number, lng: number, radius: number, setLocations: React.Dispatch<React.SetStateAction<Poi[]>>) => Promise<void>;
     onMarkerClick: (location: Poi) => void;
+  setLocations: React.Dispatch<React.SetStateAction<Poi[]>>;
 }
 
-const MapContainer: React.FC<MapContainerProps> = ({ locations, onMarkerClick }) => {
-    const defaultCenter = { lat: -33.860664, lng: 151.208138 };
+const MapContainer: React.FC<MapContainerProps> = ({ locations, updateLocationPins, onMarkerClick, setLocations }) => {
+    const defaultCenter = { lat: 42.35138, lng: -71.11551 };
     const map = useMap();
     const [markers, setMarkers] = useState<{ [key: string]: google.maps.Marker }>({});
     const clusterer = useRef<MarkerClusterer | null>(null);
@@ -168,7 +189,7 @@ const MapContainer: React.FC<MapContainerProps> = ({ locations, onMarkerClick })
                     />
                 )}
             </Map>
-            <BottomBar setMapCenter={setMapCenter} radius={radius} setRadius={setRadius} setShowButtons={setShowButtons}/>
+        <BottomBar mapCenter={center} setMapCenter={setMapCenter} radius={radius} setRadius={setRadius} setShowButtons={setShowButtons} updateLocationPins={updateLocationPins} setLocations={setLocations}/>
             { showButtons && (
               <>
             <Button
