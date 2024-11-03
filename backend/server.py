@@ -85,32 +85,32 @@ def parse_service_row(row: dict) -> ServiceModel:
 # Endpoint for displaying user input data
 @app.get("/locations/", response_model=List[ServiceModel])
 async def get_all_services(lat: float, lng: float, radius: float):
+    radius = radius * 1609.34
     conn = create_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM services")  
     rows = cursor.fetchall()
     conn.close()
 
-    # services = [parse_service_row(dict(zip([column[0] for column in cursor.description], row))) for row in rows]
     services = [
         parse_service_row(dict(zip([column[0] for column in cursor.description], row)))
         for row in rows
     ]
 
-    # Filter services by distance
-    filtered_services = [
-        service for service in services
-        if service.coordinates and len(service.coordinates) > 0 
-        and calculate_distance(
-            lat, 
-            lng, 
-            float(service.coordinates[0][0]), 
-            float(service.coordinates[0][1])
-        ) <= radius        
-    ]
-    
-    return filtered_services
+    filtered_services = []
+    for service in services:
+        if service.coordinates and len(service.coordinates) == 2:
+            service_lat = float(service.coordinates[0])  
+            service_lng = float(service.coordinates[1])  
+            print(type(service_lat), type(service.coordinates[0]), service.coordinates[0])
+            distance = calculate_distance(lat, lng, service_lat, service_lng)
 
+            if distance <= radius:
+                filtered_services.append(service)
+        else:
+            print(f"Service {service.name} has invalid coordinates: {service.coordinates}")
+
+    return filtered_services
 
 def calculate_distance(lat1, lon1, lat2, lon2):
     # Radius of the Earth in kilometers
