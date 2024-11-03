@@ -5,6 +5,8 @@ from service import Service
 import math
 import hashlib
 import map
+import time
+
 
 def hash_organization_name(name):
     return hashlib.sha256(name.encode()).hexdigest()
@@ -41,6 +43,8 @@ def fetch_and_process_spreadsheet_data(sheet_name, json_key_path, lat, lng, radi
     Returns:
         list: A list of Service objects created from the spreadsheet data.
     """
+    # timing
+    start = time.time()
     # Define the scope
     scopes = [
         "https://www.googleapis.com/auth/spreadsheets",
@@ -57,6 +61,8 @@ def fetch_and_process_spreadsheet_data(sheet_name, json_key_path, lat, lng, radi
         spreadsheet = client.open(sheet_name)
         sheet = spreadsheet.sheet1  # Access the first worksheet
         data = sheet.get_all_records()  # Retrieve all data from the sheet
+    #print data keys
+        print(data[0].keys())
 
     except Exception as e:
         print("An error occurred:", e)
@@ -64,7 +70,10 @@ def fetch_and_process_spreadsheet_data(sheet_name, json_key_path, lat, lng, radi
 
     # Process data and create Service instances
     services = []
-    for row in data:
+    # index backwards, don't add if the name is already in the services list
+    for row in reversed(data):
+        if row["Name of Organization"] in [service.name for service in services]:
+            continue
         address_list = row["Address"].split(";")
         coordinate_list = []
         for address in address_list:
@@ -72,7 +81,7 @@ def fetch_and_process_spreadsheet_data(sheet_name, json_key_path, lat, lng, radi
                 coordinates = map.get_coordinates(address)
                 coordinate_list.append(coordinates)
         
-        org_name = row["Name of Organization "]
+        org_name = row["Name of Organization"]
         unique_id = hash_organization_name(org_name)
 
         service = Service(
@@ -96,6 +105,7 @@ def fetch_and_process_spreadsheet_data(sheet_name, json_key_path, lat, lng, radi
 
     services_lists = filter_by_distance(services, lat, lng, radius)
     filtered_list = filtering_service_type(services_lists, service_types)
+    print("Time taken: ", time.time() - start)
     return filtered_list
 
 
