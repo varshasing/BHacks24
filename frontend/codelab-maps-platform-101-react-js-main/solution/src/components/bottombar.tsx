@@ -37,9 +37,10 @@ interface BottomBarProps {
     setShowButtons: Dispatch<SetStateAction<boolean>>;
     updateLocationPins: (query: string, lat: number, lng: number, radius: number, setLocations: React.Dispatch<React.SetStateAction<Poi[]>>) => Promise<void>;
     setLocations: React.Dispatch<React.SetStateAction<Poi[]>>;
+    setShowGif: Dispatch<SetStateAction<boolean>>;
 
 }
-const BottomBar: React.FC<BottomBarProps> = ({ mapCenter, setMapCenter, setRadius, radius, setShowButtons, updateLocationPins, setLocations }) => {
+const BottomBar: React.FC<BottomBarProps> = ({ mapCenter, setMapCenter, setRadius, radius, setShowButtons, updateLocationPins, setLocations, setShowGif }) => {
     const [focused, setFocused] = useState<boolean>(false);
     const [searchingFocus, setSearchingFocus] = useState<boolean>(false);
     const [query, setQuery] = useState<string>('');
@@ -110,6 +111,8 @@ const BottomBar: React.FC<BottomBarProps> = ({ mapCenter, setMapCenter, setRadiu
         if (mapCenter) {
             console.log('Searching for:', selectedOptions[0], mapCenter.lat, mapCenter.lng, radius / 2.0);
             updateLocationPins(selectedOptions[0], mapCenter.lat, mapCenter.lng, radius / 2.0, setLocations);
+            setShowGif(true);
+            console.log("GIF APPEARS");
         }
         handleCancel();
     };
@@ -306,7 +309,7 @@ const BottomBar: React.FC<BottomBarProps> = ({ mapCenter, setMapCenter, setRadiu
                         </FormControl>
                     </Box>
 
-
+                                    
                     <Button
                         variant="contained"
                         color="primary"

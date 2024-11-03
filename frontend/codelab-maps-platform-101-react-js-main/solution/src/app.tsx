@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   APIProvider,
@@ -102,20 +102,6 @@ const updateLocations = async (query: string, lat: number, lng: number, radius: 
 
 const App = () => {
   const [locations, setLocations] = useState<Poi[]>([
-    {
-      ID: 'hello',
-      location: { lat: 42.35139, lng: -71.11552 },
-      name: 'Boston University Student Health Services',
-      services: ['Healthcare', 'Mental Health Services'],
-      summary: 'Boston University Student Health Services provides a variety of healthcare services to students, including primary care, mental health services, and more.',
-      address: '881 Commonwealth Ave, Boston, MA 02215',
-      hours: '9:00am - 4:30pm',
-      demographics: 'Students',
-      languages: ['English'],
-      website: 'bu.edu/shs',
-      phone: '617-353-3575',
-      upvote: 5,
-    }
   ]);
   const [selectedLocation, setSelectedLocation] = useState<Poi | null>(null);
   const handleBack = () => {
@@ -132,6 +118,7 @@ const App = () => {
 
   return (
     <APIProvider apiKey={google_maps_api_key} onLoad={() => console.log('Maps API has loaded.')}>
+
       <MapContainer
         locations={locations}
         updateLocationPins={updateLocations}

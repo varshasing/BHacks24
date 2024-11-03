@@ -71,6 +71,7 @@ const MapContainer: React.FC<MapContainerProps> = ({ locations, updateLocationPi
     const [isStreetView, setIsStreetView] = useState(false);
     const [showButtons, setShowButtons] = useState(true);
     const [showLogo, setShowLogo] = useState(true);
+    const [showGif, setShowGif] = useState(false);
 
     const handleMarkerClick = useCallback(
         (ev: google.maps.MapMouseEvent, location: Poi) => {
@@ -88,6 +89,11 @@ const MapContainer: React.FC<MapContainerProps> = ({ locations, updateLocationPi
         map.
         setCenter(map.getCenter()?.toJSON() ?? null); // Set initial center
     }, [map]);
+
+    useEffect(() => {
+      setShowGif(false);
+      console.log("GIF DISAPPEARS")
+    }, [locations]);
 
     const setMapCenter = (latitude: number, longitude: number) => {
         if (map) {
@@ -193,7 +199,7 @@ const MapContainer: React.FC<MapContainerProps> = ({ locations, updateLocationPi
               />
                     </AdvancedMarker>
                 ))}
-                {center && (
+                {center && !showGif && (
                     <Circle
                         center={center}
                         radius={radius * 1609.34 / 2} // Convert km to meters
@@ -207,7 +213,21 @@ const MapContainer: React.FC<MapContainerProps> = ({ locations, updateLocationPi
                     />
                 )}
             </Map>
-        <BottomBar mapCenter={center} setMapCenter={setMapCenter} radius={radius} setRadius={setRadius} setShowButtons={setShowButtons} updateLocationPins={updateLocationPins} setLocations={setLocations}/>
+        {showGif && (
+          <img
+            src={'/manidhaya.gif'}
+            alt="Loading"
+            style={{
+              position: 'fixed',
+              top: '40%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 2000,
+              borderRadius: '8px', // Adjust the radius as needed for roundness
+            }}
+          />
+        )}
+        <BottomBar mapCenter={center} setMapCenter={setMapCenter} radius={radius} setRadius={setRadius} setShowButtons={setShowButtons} updateLocationPins={updateLocationPins} setLocations={setLocations} setShowGif={setShowGif}/>
             { showButtons && (
               <>
             <Button
