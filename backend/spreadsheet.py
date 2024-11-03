@@ -2,14 +2,15 @@
 import gspread
 from google.oauth2.service_account import Credentials
 from service import Service
-import map
+import math
 import hashlib
+# import map
 
 def hash_organization_name(name):
     return hashlib.sha256(name.encode()).hexdigest()
 
 
-def fetch_and_process_spreadsheet_data(sheet_name, json_key_path):
+def fetch_and_process_spreadsheet_data(sheet_name, json_key_path, lat, lng, radius):
     """
     Parses spreadsheet data, creates Service objects, and returns a list of Service instances.
 
@@ -73,14 +74,78 @@ def fetch_and_process_spreadsheet_data(sheet_name, json_key_path):
 
         )
         services.append(service)
+
+        services = filter_by_distance(services, lat, lng, radius)
+
     
     return services
 
+
+def filter_by_distance(services, lat, lng, radius):
+    filtered_services = []
+    
+    for service in services:
+        if isinstance(service.coordinates, dict):
+            coordinates_list = [service.coordinates]  
+        else:
+            coordinates_list = service.coordinates
+        
+        for coordinates in coordinates_list:
+            if calculate_distance(lat, lng, coordinates['lat'], coordinates['lng']) <= radius:
+                filtered_services.append(service)
+                break 
+
+    return filtered_services
+
+
+import math
+
+def calculate_distance(lat1, lng1, lat2, lng2):
+    """
+    Calculates the distance between two geographic points using the Haversine formula.
+
+    Args:
+        lat1 (float): Latitude of the first point.
+        lng1 (float): Longitude of the first point.
+        lat2 (float): Latitude of the second point.
+        lng2 (float): Longitude of the second point.
+
+    Returns:
+        float: Distance in meters.
+    """
+    # Convert latitude and longitude from degrees to radians
+    lat1_rad = math.radians(lat1)
+    lng1_rad = math.radians(lng1)
+    lat2_rad = math.radians(lat2)
+    lng2_rad = math.radians(lng2)
+
+    # Haversine formula
+    dlat = lat2_rad - lat1_rad
+    dlon = lng2_rad - lng1_rad
+    a = (math.sin(dlat / 2) ** 2 +
+         math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(dlon / 2) ** 2)
+    c = 2 * math.asin(math.sqrt(a))
+
+    # Radius of the Earth in meters (mean radius)
+    radius_of_earth_meters = 6371000
+    return c * radius_of_earth_meters
+
+
+
 def main():
+    lat = 42.3601
+    lng = -71.0589
+    radius = 500  #500m
+
     services = fetch_and_process_spreadsheet_data(
         'UrbanRefugeAidServices', 
         'balmy-virtue-440518-c9-1dbeaecb35aa.json'
     )
+    filtered_services = filter_by_distance(services, lat, lng, radius)
+    for service in filtered_services:
+        print(service)
+
+
     for service in services:
         print(service.__dict__)
 

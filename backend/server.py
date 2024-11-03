@@ -31,7 +31,11 @@ class ServiceModel(BaseModel):
         orm_mode = True
 
 @app.get("/services", response_model=List[ServiceModel])
+#fix it so that it can take multiple query parameters
 async def get_combined_services(query: str, lat: float, lng: float, radius: int):
+    #convert miles to meter
+    radius = radius * 1609.34
+    
     spreadsheet_services = fetch_and_process_spreadsheet_data(
         'UrbanRefugeAidServices', 
         'balmy-virtue-440518-c9-1dbeaecb35aa.json'
@@ -49,14 +53,14 @@ async def get_combined_services(query: str, lat: float, lng: float, radius: int)
 
 '''
 TODO:
+sienna:
+database for users to enter their own location
+json string, name, address, all the fields of the spreadsheet
+some may be empty string
+make a database table. each key is a number counting in sequence (or someting that is a unique key)
 
-varsha:
-we want when we call the fastAPI, to only return things from the spreadsheet that match the query
-    spreadsheet parser needs to be able to filter by query
 
-why are somethings NULL instead of ""
-
-
-when the front end passes back the query, lat, lng, radius, the google maps API follows that fuideline
-BUT the spreadsheet parser does not follow that guideline, so we need to filter out shit that is too far
+one pushed into database should be on the map immediate, must get all poitns from spreadsheet, google maps, and databse
+SQLite
+only need one table
 '''
