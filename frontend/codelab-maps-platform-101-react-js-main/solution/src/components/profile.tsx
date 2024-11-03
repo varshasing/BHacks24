@@ -16,7 +16,7 @@ interface ProfileProps {
   demographics?: string;// Make optional
   summary?: string;     // Make optional
   hours?: string;       // Make optional
-  upvote: number;
+  upvote?: number;
   onBack: () => void;
   onUpvote: (id: string, newUpvoteCount: number) => void;
 }
@@ -36,7 +36,7 @@ const Profile: React.FC<ProfileProps> = ({
   onBack,
   onUpvote,
 }) => {
-  const [currentUpvote, setCurrentUpvote] = useState(upvote);
+  const [currentUpvote, setCurrentUpvote] = useState(upvote || 0);
   const [upvoteClicked, setUpvoteClicked] = useState(false); // Track if upvote has been clicked
 
   const handleUpvote = async () => {
@@ -49,20 +49,25 @@ const Profile: React.FC<ProfileProps> = ({
     onUpvote(ID, newUpvoteCount);
 
     try {
-      const url = `${BACKEND_BASE_URL}/reviews?ID=${encodeURIComponent(ID)}&upvote=${encodeURIComponent(currentUpvote + 1)}`;
-      const response = await fetch(url, { method: 'POST' });
-
+      const url = `${BACKEND_BASE_URL}/reviews/`;
+      const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ ID, upvote: 1 })
+      });
+  
       if (!response.ok) {
-        console.error('Failed to upvote on the backend');
+          console.error('Failed to upvote on the backend');
       } else {
-        onUpvote(ID, currentUpvote + 1); // Inform App about the new upvote count
+          onUpvote(ID, currentUpvote + 1); // Inform App about the new upvote count
       }
-    } catch (error) {
+  } catch (error) {
       console.error('Error during upvote:', error);
-    }
+  }
   };
   
-
   return (
     <Box
       sx={{
@@ -150,7 +155,7 @@ const Profile: React.FC<ProfileProps> = ({
         color="primary"
         onClick={handleUpvote}
         startIcon={<FontAwesomeIcon icon={faThumbsUp} />}
-        disbled={upvoteClicked}
+        disabled={upvoteClicked}
       >
         {currentUpvote}
       </Button>
