@@ -4,11 +4,10 @@ from map import find_places
 from typing import List
 from database import create_connection
 import json
-from models import ServiceModel, ReviewModel, ServiceReviewsModel
+from models import ServiceModel, ServiceInput, ReviewModel
 from starlette.middleware.cors import CORSMiddleware
 import ast
 import math
-from models import ServiceModel, ReviewModel, ServiceReviewsModel, ServiceInput
 
 
 app = FastAPI()
@@ -192,48 +191,51 @@ async def add_service(service_input: ServiceInput):
     return {"message": "Service added successfully"}
 
 
-
-# POST endpoint to add a new review for a service
 @app.post("/reviews/")
 async def add_review(review: ReviewModel):
     conn = create_connection()
     cursor = conn.cursor()
 
     # Check if the service ID exists
-    cursor.execute("SELECT ID FROM services WHERE ID = ?", (review.service_id,))
+    cursor.execute("SELECT ID FROM services WHERE ID = ?", (review.ID,))
     service = cursor.fetchone()
     if not service:
         conn.close()
         raise HTTPException(status_code=404, detail="Service ID not found")
         
-    # Check if there are existing reviews for this service
-    cursor.execute("SELECT reviews FROM reviews WHERE service_id = ?", (review.service_id,))
+    # Check if there are existing entries for this service
+    cursor.execute("SELECT upvote FROM reviews WHERE ID = ?", (review.ID,))
     row = cursor.fetchone()
 
     if row:
-        # If reviews exist, append the new review to the list
-        reviews = json.loads(row[0])
-        reviews.append(review.review)
-        cursor.execute("UPDATE reviews SET reviews = ? WHERE service_id = ?", (json.dumps(reviews), review.service_id))
+        # If the entry exists, increment the upvote count
+        upvote_count = row[0] + 1
+        cursor.execute(
+            "UPDATE reviews SET upvote = ? WHERE ID = ?",
+            (upvote_count, review.ID)
+        )
     else:
-        # If no reviews exist, create a new entry
-        cursor.execute("INSERT INTO reviews (service_id, reviews) VALUES (?, ?)", (review.service_id, json.dumps([review.review])))
+        # If no entry exists, create a new one with upvote initialized to 1
+        cursor.execute("INSERT INTO reviews (ID, upvote) VALUES (?, ?)", 
+                       (review.ID, 1))
 
     conn.commit()
     conn.close()
 
-    return {"message": "Review added successfully"}
+    return {"message": "Upvote added successfully"}
 
-# GET endpoint to retrieve all service IDs and their corresponding reviews
-@app.get("/reviews/", response_model=List[ServiceReviewsModel])
+@app.get("/reviews/", response_model=List[ReviewModel])
 async def get_all_reviews():
     conn = create_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT service_id, reviews FROM reviews")
+    
+    # Select ID and upvote from the reviews table
+    cursor.execute("SELECT ID, upvote FROM reviews")
     rows = cursor.fetchall()
     conn.close()
 
-    service_reviews = [
-        ServiceReviewsModel(service_id=row[0], reviews=json.loads(row[1])) for row in rows
+    # Create a list of ReviewModel instances
+    reviews = [
+        ReviewModel(ID=row[0], upvote=row[1]) for row in rows
     ]
-    return service_reviews
+    return reviews
