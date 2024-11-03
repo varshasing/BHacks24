@@ -195,13 +195,6 @@ async def add_service(service_input: ServiceInput):
 async def add_review(review: ReviewModel):
     conn = create_connection()
     cursor = conn.cursor()
-
-    # Check if the service ID exists
-    cursor.execute("SELECT ID FROM services WHERE ID = ?", (review.ID,))
-    service = cursor.fetchone()
-    if not service:
-        conn.close()
-        raise HTTPException(status_code=404, detail="Service ID not found")
         
     # Check if there are existing entries for this service
     cursor.execute("SELECT upvote FROM reviews WHERE ID = ?", (review.ID,))
