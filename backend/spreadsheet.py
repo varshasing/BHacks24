@@ -3,6 +3,10 @@ import gspread
 from google.oauth2.service_account import Credentials
 from service import Service
 import map
+import hashlib
+
+def hash_organization_name(name):
+    return hashlib.sha256(name.encode()).hexdigest()
 
 
 def fetch_and_process_spreadsheet_data(sheet_name, json_key_path):
@@ -39,30 +43,46 @@ def fetch_and_process_spreadsheet_data(sheet_name, json_key_path):
 
     # Process data and create Service instances
     services = []
-    for row in data:
+    for i, row in data:
         address_list = row["Address"].split(";")
         coordinate_list = []
         for address in address_list:
             if len(address) > 3:
                 coordinates = map.get_coordinates(address)
                 coordinate_list.append(coordinates)
-                
+        
+        org_name = row["Name of Organization"]
+        unique_id = hash_organization_name(org_name)
+
         service = Service(
-            row["Name of Organization "],
-            row["Service Type"],
-            row["Extra Filters"],
-            row["Who are these services for? (refugees, asylees, TPS, parolees, any status, etc.)"],
-            row["Website"],
-            row["Summary of Services"],
-            address_list,
-            coordinate_list,
-            row["Neighborhood"],
-            row["Hours"],
-            row["Phone Number (for public to contact)"],
-            row["Services offered in these languages"],
+            ID=unique_id, 
+            name=org_name,
+            servicetype=row["Service Type"],
+            extrafilters=row["Extra Filters"],
+            demographic=row["Who are these services for? (refugees, asylees, TPS, parolees, any status, etc.)"],
+            website=row["Website"],
+            summary=row["Summary of Services"],
+            address=address_list,
+            coordinates=coordinate_list,
+            neighborhoods=row["Neighborhood"],
+            hours=row["Hours"],
+            phone=row["Phone Number (for public to contact)"],
+            languages=row["Services offered in these languages"],
             googlelink=False,
-            URAverifed=True,
+            source="Urban Refuge Aid"
+
         )
         services.append(service)
     
     return services
+
+def main():
+    services = fetch_and_process_spreadsheet_data(
+        'UrbanRefugeAidServices', 
+        'balmy-virtue-440518-c9-1dbeaecb35aa.json'
+    )
+    for service in services:
+        print(service.__dict__)
+
+if __name__ == "__main__":
+    main()
