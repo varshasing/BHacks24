@@ -2,7 +2,7 @@ import React, { useState, ChangeEvent } from 'react';
 import { Box, TextField, List, ListItem, ListItemText } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { Slider, Typography } from '@mui/material';
-
+import {Button} from '@mui/material';
 interface SearchResult {
     displayName: string;
     latitude: string;
@@ -33,14 +33,32 @@ async function searchOpenStreetMap(query: string): Promise<SearchResult[]> {
     }
 }
 
-const BottomBar: React.FC = () => {
+interface BottomBarProps {
+    setMapCenter: (latitude: number, longitude: number) => void;
+    setRadius: (radius: number) => void;
+    radius: number;
+}
+
+const BottomBar: React.FC<BottomBarProps> = ({ setMapCenter, setRadius, radius }) => {
     const [focused, setFocused] = useState<boolean>(false);
     const [searchingFocus, setSearchingFocus] = useState<boolean>(false);
     const [query, setQuery] = useState<string>('');
     const [results, setResults] = useState<SearchResult[]>([]);
     const [selectedLocation, setSelectedLocation] = useState<SearchResult | null>(null);
     const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
-    const [radius, setRadius] = useState<number>(10);
+
+
+    const handleCancel = () => {
+        setQuery('');
+        setResults([]);
+        setSelectedLocation(null);
+        setSearchingFocus(false);
+    };
+
+    const handleNext = () => {
+        console.log("Proceeding to the next step with location:", selectedLocation);
+    };
+
 
     const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {
         const newQuery = event.target.value;
@@ -68,10 +86,24 @@ const BottomBar: React.FC = () => {
         console.log("Radius:", newValue);
     };
 
-    const handleLocationSelect = (result: SearchResult) => {
-        console.log("CLICKITY CLICK");
+    const handleLocationSelect = (result: SearchResult | null) => {
+        if (!result) {
+            // Use current location
+            navigator.geolocation.getCurrentPosition((position) => {
+                setMapCenter(position.coords.latitude, position.coords.longitude);
+            });
+            setQuery('');
+            setResults([]);
+            setSearchingFocus(false);
+            return;
+        }
+        setQuery(result.displayName);
         setSelectedLocation(result);
         setResults([]); // Clear search results after selection
+        setSearchingFocus(false);
+
+        // Move map camera to selected location
+        setMapCenter(parseFloat(result.latitude), parseFloat(result.longitude));
         console.log("Selected Location:", result);
     };
 
@@ -86,7 +118,7 @@ const BottomBar: React.FC = () => {
                 backgroundColor: '#fff',
                 boxShadow: '0 -2px 5px rgba(0,0,0,0.1)',
                 padding: '10px 20px',
-                paddingBottom: focused ? (searchingFocus ? '140%' : '40%') : '10px',
+                paddingBottom: focused ? (searchingFocus ? '140%' : '25%') : '10px',
                 justifyContent: 'center',
                 alignItems: 'center',
                 borderRadius: '30px',
@@ -94,7 +126,6 @@ const BottomBar: React.FC = () => {
                 zIndex: 1,
             }}
             onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
             tabIndex={-1}
         >
             <Box
@@ -109,6 +140,7 @@ const BottomBar: React.FC = () => {
             >
                 <SearchIcon sx={{ color: 'grey.600', mr: 1 }} />
                 <TextField
+                    autoComplete="off"
                     placeholder="Search location"
                     variant="standard"
                     fullWidth
@@ -119,17 +151,16 @@ const BottomBar: React.FC = () => {
                         sx: { fontSize: '16px' },
                     }}
                     onFocus={() => setSearchingFocus(true)}
-                    onBlur={() => setSearchingFocus(false)}
                 />
             </Box>
 
-            {searchingFocus && results.length > 0 && (
+            {searchingFocus && (
                 <List
                     sx={{
                         position: 'absolute',
                         top: '50px',
                         width: '80%',
-                        bottom: '50%',
+                        bottom: '10%',
                         overflowY: 'auto',
                         backgroundColor: '#fff',
                         borderRadius: '10px',
@@ -150,6 +181,12 @@ const BottomBar: React.FC = () => {
                         }
                     }}
                 >
+                    <ListItem key={-1} component="div" onClick={() => handleLocationSelect(null)}>
+                        <ListItemText
+                            primary="Current Location"
+                        />
+                    </ListItem>
+
                     {results.map((result, index) => (
                         <ListItem key={index} component="div" onClick={() => handleLocationSelect(result)}>
                             <ListItemText
@@ -164,7 +201,7 @@ const BottomBar: React.FC = () => {
                 <Box
                     sx={{
                         position: 'absolute',
-                        top: '55%',
+                        top: '35%',
                         width: '80%',
                         display: 'flex',
                         flexDirection: 'column',
@@ -185,6 +222,23 @@ const BottomBar: React.FC = () => {
                             {radius + "km"}
                         </Typography>
                     </Box>
+                    {/* Add Cancel and Next buttons */}
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            mt: 3,
+                            width: '100%',
+                        }}
+                    >
+                        <Button variant="outlined" color="secondary" onClick={handleCancel}>
+                            Cancel
+                        </Button>
+                        <Button variant="contained" color="primary" onClick={handleNext} disabled={!selectedLocation}>
+                            Next
+                        </Button>
+                    </Box>
+
                 </Box>
             )}
         </Box>
