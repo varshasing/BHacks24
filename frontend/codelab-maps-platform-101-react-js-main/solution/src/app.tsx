@@ -87,9 +87,17 @@ const updateLocations = async (query: string, lat: number, lng: number, radius: 
     };
     parsedLocations.push(poi);
   })
+  const uniqueLocations = parsedLocations.reduce((acc, current) => {
+    const duplicate = acc.find(poi => poi.name === current.name);
+    if (!duplicate) {
+      acc.push(current);
+    }
+    return acc;
+  }, []);
+
   console.log("PARSED LOCATIONS", parsedLocations);
-  setLocations(parsedLocations);
-  console.log("SET LOCATIONS", parsedLocations);
+  setLocations(uniqueLocations);
+  console.log("UNIQUE LOCATIONS", uniqueLocations);
 };
 
 const App = () => {
