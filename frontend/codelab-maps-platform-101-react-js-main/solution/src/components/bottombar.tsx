@@ -230,7 +230,7 @@ const BottomBar: React.FC<BottomBarProps> = ({ mapCenter, setMapCenter, setRadiu
                     paddingTop: '10px',
                     px: 2,
                 }}>
-                    <Typography variant="h6">Select Services</Typography>
+                    <Typography variant="h6">Select Service</Typography>
                     <Box sx={{ width: '100%', mt: 2 }}>
                         <FormControl fullWidth>
                             <InputLabel>Select Service</InputLabel>
