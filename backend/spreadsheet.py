@@ -8,14 +8,33 @@ import hashlib
 def hash_organization_name(name):
     return hashlib.sha256(name.encode()).hexdigest()
 
+def filtering_service_type(service_list, service_types):
+    """
+    Filters the list of services by service type.
 
-def fetch_and_process_spreadsheet_data(sheet_name, json_key_path):
+    Args:
+        service_list (list): A list of Service objects. Each object can have multiple service_type matches, only want one
+        service_types (list): A list of service types to filter by.
+
+    Returns:
+        filtered_list: A list of Service objects that match the service type.
+    """
+    filtered_list = []
+
+    for service in service_list:
+        if any(service_type in service.servicetype for service_type in service_types):
+            filtered_list.append(service)
+    return filtered_list
+
+
+def fetch_and_process_spreadsheet_data(sheet_name, json_key_path, service_types):
     """
     Parses spreadsheet data, creates Service objects, and returns a list of Service instances.
 
     Args:
         sheet_name (str): The name of the Google Sheet to open.
         json_key_path (str): Path to the service account JSON key file.
+        service_type (str): A list of service types to filter by.
 
     Returns:
         list: A list of Service objects created from the spreadsheet data.
@@ -73,7 +92,8 @@ def fetch_and_process_spreadsheet_data(sheet_name, json_key_path):
         )
         services.append(service)
     
-    return services
+    filtered_list = filtering_service_type(services, service_types)
+    return filtered_list
 
 def main():
     services = fetch_and_process_spreadsheet_data(
