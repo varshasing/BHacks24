@@ -1,5 +1,4 @@
 import sqlite3
-import json
 
 def create_connection():
     conn = sqlite3.connect('services.db')  # Database file
@@ -34,11 +33,10 @@ def create_table():
 
     # Reviews table
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS reviews (
-            service_id TEXT,
-            reviews TEXT
-            update INTEGER
-        )
+    CREATE TABLE IF NOT EXISTS reviews (
+        ID TEXT PRIMARY KEY,
+        upvote INTEGER DEFAULT 0
+    )
     ''')
 
     conn.commit()
