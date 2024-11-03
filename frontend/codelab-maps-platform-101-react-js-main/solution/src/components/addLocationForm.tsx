@@ -88,7 +88,7 @@ const AddLocationForm: React.FC<AddLocationFormProps> = ({ open, onClose, onSubm
         left: 0,
         width: '100%',
         height: '100%',
-        zIndex: 1300,
+        zIndex: 2000,
         backgroundColor: '#ffffff',
         color: '#000000',
         overflowY: 'auto',

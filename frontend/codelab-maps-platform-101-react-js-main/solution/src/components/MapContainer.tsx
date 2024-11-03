@@ -12,6 +12,7 @@ import { Circle } from './circle';
 import { Button } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMap, faEye, faEdit } from '@fortawesome/free-solid-svg-icons';
+import AddLocationForm from './addLocationForm';
 
 type Poi = {
     location: google.maps.LatLngLiteral;
@@ -40,6 +41,7 @@ const MapContainer: React.FC<MapContainerProps> = ({ locations, onMarkerClick })
     const [center, setCenter] = useState<google.maps.LatLngLiteral | null>(defaultCenter);
     const [isStreetView, setIsStreetView] = useState(false);
     const [showButtons, setShowButtons] = useState(true);
+    const [showLogo, setShowLogo] = useState(true);
 
     const handleMarkerClick = useCallback(
         (ev: google.maps.MapMouseEvent, location: Poi) => {
@@ -77,19 +79,40 @@ const MapContainer: React.FC<MapContainerProps> = ({ locations, onMarkerClick })
           console.log('mapCenter:', mapCenter);
           if (isStreetView) {
             // Exit Street View
+            setShowLogo(true);
             streetView.setVisible(false);
           } else {
             // Enter Street View at the current map center
+            setShowLogo(false);
+
             streetView.setVisible(true);
           }
           setIsStreetView(!isStreetView); // Toggle state
         }
       }, [map, isStreetView]);
 
+    const [isFormOpen, setIsFormOpen] = useState(false);
+
+    const handleAddLocationClick = () => {
+        setShowButtons(false);
+        setIsFormOpen(true);
+    };
+
+    const handleCloseForm = () => {
+        setIsFormOpen(false);
+        setShowButtons(true);
+    };
+
+    const handleFormSubmit = (formData) => {
+        console.log('Location data submitted:', formData);
+        setIsFormOpen(false); // Close form after submission
+        // Add the new location data to the map or database here
+    };
+    
     return (
         <>
         <a href='https://www.urbanrefuge.org/' target='_blank'>
-          <img
+        { showLogo && (<img
             src={'/ur_logo.png'}
             alt="Logo"
             style={{
@@ -101,7 +124,8 @@ const MapContainer: React.FC<MapContainerProps> = ({ locations, onMarkerClick })
               zIndex: 2000,
               borderRadius: '8px', // Adjust the radius as needed for roundness
             }}
-          />
+          />)}
+          
         </a>
         
             <Map
@@ -150,7 +174,7 @@ const MapContainer: React.FC<MapContainerProps> = ({ locations, onMarkerClick })
             <Button
               variant="contained"
               color="primary"
-              onClick={() => { console.log('edit button clicked') }}
+              onClick={handleAddLocationClick}
               sx={{
                 position: 'fixed',
                 bottom: '80px',
@@ -187,7 +211,11 @@ const MapContainer: React.FC<MapContainerProps> = ({ locations, onMarkerClick })
 
             }
             
-
+            <AddLocationForm
+                open={isFormOpen}
+                onClose={handleCloseForm}
+                onSubmit={handleFormSubmit}
+            />
         </>
     );
 };

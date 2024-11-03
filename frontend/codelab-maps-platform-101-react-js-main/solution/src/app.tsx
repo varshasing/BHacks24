@@ -13,7 +13,7 @@ import google_maps_api_key from '../secrets';
 import Profile from './components/profile';
 import BottomBar from './components/bottombar';
 import MapContainer from './components/MapContainer';
-import AddLocationForm from './components/addLocationForm';
+
 import {Button} from '@mui/material';
 type Poi = {
   location: google.maps.LatLngLiteral;
@@ -50,32 +50,8 @@ const App = () => {
     setSelectedLocation(null);
   };
 
-  const [isFormOpen, setIsFormOpen] = useState(false);
-
-  const handleAddLocationClick = () => {
-    setIsFormOpen(true);
-  };
-
-  const handleCloseForm = () => {
-    setIsFormOpen(false);
-  };
-
-  const handleFormSubmit = (formData) => {
-    console.log('Location data submitted:', formData);
-    setIsFormOpen(false); // Close form after submission
-    // Add the new location data to the map or database here
-  };
-
   return (
     <APIProvider apiKey={google_maps_api_key} onLoad={() => console.log('Maps API has loaded.')}>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={handleAddLocationClick}
-        sx={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 1200 }}
-      >
-        Add Location
-      </Button>
       <MapContainer
         locations={locations}
         onMarkerClick={setSelectedLocation}
@@ -95,11 +71,7 @@ const App = () => {
         />
       )}
 
-      <AddLocationForm
-        open={isFormOpen}
-        onClose={handleCloseForm}
-        onSubmit={handleFormSubmit}
-      />
+      
     </APIProvider>
   );
 };

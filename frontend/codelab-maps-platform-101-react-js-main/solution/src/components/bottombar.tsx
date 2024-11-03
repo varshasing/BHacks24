@@ -145,6 +145,7 @@ const BottomBar: React.FC<BottomBarProps> = ({ setMapCenter, setRadius, radius, 
                 <>
                     <Box sx={{
                         display: 'flex',
+                        justifyContent: 'center',
                         alignItems: 'center',
                         flex: 1,
                         backgroundColor: '#f1f1f1',
@@ -177,6 +178,7 @@ const BottomBar: React.FC<BottomBarProps> = ({ setMapCenter, setRadius, radius, 
                             backgroundColor: '#fff',
                             borderRadius: '10px',
                             mt: 1,
+                            px: 2,
                             '::-webkit-scrollbar': {
                                 width: '8px',
                             },
@@ -211,8 +213,9 @@ const BottomBar: React.FC<BottomBarProps> = ({ setMapCenter, setRadius, radius, 
                             width: '80%',
                             display: 'flex',
                             flexDirection: 'column',
+                            px: 2,
                         }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', flexDirection: 'row' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent:'center', width: '100%', flexDirection: 'row' }}>
                                 <Slider
                                     value={radius}
                                     min={1}
@@ -247,7 +250,9 @@ const BottomBar: React.FC<BottomBarProps> = ({ setMapCenter, setRadius, radius, 
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    paddingTop: '10px'
+                    justifyContent:'center',
+                    paddingTop: '10px',
+                    px: 2,
                 }}>
                     <Typography variant="h6">Select Services</Typography>
                     <Box sx={{
