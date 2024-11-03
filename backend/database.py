@@ -7,9 +7,16 @@ def create_connection():
 def create_table():
     conn = create_connection()
     cursor = conn.cursor()
+    
+    # Reviews table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS reviews (
+        ID TEXT PRIMARY KEY,
+        upvote INTEGER DEFAULT 0
+    )
+    ''')
 
-
-    #user input data
+    # User input data
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS services (
         ID TEXT PRIMARY KEY,
@@ -26,18 +33,29 @@ def create_table():
         phone TEXT,
         languages TEXT,
         googlelink TEXT,
-        source TEXT
-    )
-    ''')
-
-
-    # Reviews table
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS reviews (
-        ID TEXT PRIMARY KEY,
-        upvote INTEGER DEFAULT 0
+        source TEXT, 
+        upvote INTEGER DEFAULT 0 
     )
     ''')
 
     conn.commit()
     conn.close()
+
+
+def get_upvote_by_id(review_id: str) -> int:
+    """Fetch the upvote count for a given review ID."""
+    conn = create_connection()
+    cursor = conn.cursor()
+
+    # Query to select upvote by ID
+    cursor.execute("SELECT upvote FROM reviews WHERE ID = ?", (review_id,))
+    row = cursor.fetchone()
+    conn.close()
+
+    if row is None:
+        return 0; # Raise an exception if no review is found
+
+
+    return row[0]
+
+
