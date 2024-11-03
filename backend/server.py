@@ -10,26 +10,6 @@ from models import ServiceModel, ReviewModel, ServiceReviewsModel
 
 app = FastAPI()
 
-class ServiceModel(BaseModel):
-    ID: str
-    name: str
-    servicetype: List[str]
-    extrafilters: Optional[List[str]]
-    demographic: Optional[str] = None
-    website: Optional[str] = None
-    summary: Optional[str] = None
-    address: List[str]
-    coordinates: Optional[tuple] = None
-    neighborhoods: Optional[List][str] = None
-    hours: Optional[str] = None
-    phone: Optional[str] = None
-    languages: List[str]
-    googlelink: Optional[str] = None
-    source: Optional[str] = None
-
-    class Config:
-        orm_mode = True
-
 @app.get("/services", response_model=List[ServiceModel])
 #fix it so that it can take multiple query parameters
 async def get_combined_services(query: str, lat: float, lng: float, radius: float):

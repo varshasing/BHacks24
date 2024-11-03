@@ -5,16 +5,16 @@ class ServiceModel(BaseModel):
     ID: str
     name: str
     servicetype: List[str]
-    extrafilters: Optional[List[str]] = None
+    extrafilters: Optional[List[str]]
     demographic: Optional[str] = None
     website: Optional[str] = None
     summary: Optional[str] = None
-    address: str
-    coordinates: List[Tuple[float, float]]  # List of lat/lng tuples
-    neighborhoods: Optional[List[str]] = None
+    address: List[str]
+    coordinates: Optional[tuple] = None
+    neighborhoods: Optional[str] = None
     hours: Optional[str] = None
     phone: Optional[str] = None
-    languages: Optional[List[str]] = None
+    languages: List[str]
     googlelink: Optional[str] = None
     source: Optional[str] = None
 
