@@ -1,6 +1,7 @@
 import requests
 import json
 from service import Service
+from spreadsheet import filter_by_distance, calculate_distance
 
 
 # A dictionary with these keys: Education, Legal, Housing/Shelter, Healthcare, Food, Employment, Community Education, Cash Assistance, Mental Health Services, Case Management
