@@ -138,7 +138,7 @@ def main():
 
     services = fetch_and_process_spreadsheet_data(
         'UrbanRefugeAidServices', 
-        'balmy-virtue-440518-c9-1dbeaecb35aa.json'
+        'balmy-virtue-440518-c9-1dbeaecb35aa.json', lat, lng, radius
     )
     filtered_services = filter_by_distance(services, lat, lng, radius)
     for service in filtered_services:
