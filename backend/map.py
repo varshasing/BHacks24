@@ -87,7 +87,7 @@ def find_places(query, lat, lng, radius):
 # Helper function for class builder, maps the json data to a service object
 def map_to_service(place_data, query):
     return Service(
-        ID=place_data.get("url") if place_data.get("url") else None,
+        ID=place_data.get("url")[place_data.get("url").find("cid=")+4:] if place_data.get("url") else None,
         name=place_data.get("name") if place_data.get("name") else None,
         servicetype=query if isinstance(query, list) else [query],  # Ensure servicetype is a list
         extrafilters=None,

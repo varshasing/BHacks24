@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Typography, IconButton, Chip, Divider, Link, Card, CardContent, Button } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -38,7 +38,33 @@ const Profile: React.FC<ProfileProps> = ({
 }) => {
   const [currentUpvote, setCurrentUpvote] = useState(upvote || 0);
   const [upvoteClicked, setUpvoteClicked] = useState(false); // Track if upvote has been clicked
+  async function getReviewUpvote(reviewId) {
+    try {
+      const response = await fetch(`${BACKEND_BASE_URL}/reviews/${encodeURI(reviewId)}`);
 
+      if (!response.ok) {
+        throw new Error(`Error fetching review: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      // Retrieve and return the upvote value
+      return data.upvote;
+    } catch (error) {
+      console.error('Failed to retrieve upvote:', error);
+      return null;
+    }
+  }
+  useEffect(() => {
+    const fetchUpvote = async () => {
+      const upvoteCount = await getReviewUpvote(ID);
+      if (upvoteCount !== null) {
+        setCurrentUpvote(upvoteCount);
+      }
+    };
+
+    fetchUpvote();
+  }, [ID]);
   const handleUpvote = async () => {
     if (upvoteClicked) return;
 

@@ -238,11 +238,11 @@ async def get_review(review_id: str):
     cursor.execute("SELECT ID, upvote FROM reviews WHERE ID = ?", (review_id,))
     row = cursor.fetchone()
     conn.close()
-
+    print("ROW ROW ROW",row)
     # If no review is found, raise a 404 error
     if row is None:
         review = ReviewModel(ID=review_id, upvote=0)
-
+    else:
+        review = ReviewModel(ID=row[0], upvote=row[1])
     # Create a ReviewModel instance with the retrieved data
-    review = ReviewModel(ID=row[0], upvote=row[1])
     return review

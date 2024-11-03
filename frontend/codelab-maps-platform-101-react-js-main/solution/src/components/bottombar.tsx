@@ -4,8 +4,6 @@ import { Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 
 import SearchIcon from '@mui/icons-material/Search';
 import { Poi } from '../app';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faLocation, faCheck, faX } from '@fortawesome/free-solid-svg-icons';
 interface SearchResult {
     displayName: string;
     latitude: string;
@@ -174,7 +172,7 @@ const BottomBar: React.FC<BottomBarProps> = ({ mapCenter, setMapCenter, setRadiu
                         px: 2,
                     }}>
                         <ListItem key={-1} component="div" onClick={() => handleLocationSelect(null)}>
-                            <><FontAwesomeIcon icon={faLocation} size='2x' /> <ListItemText sx={{paddingLeft:1}} primary=" Current Location" /></>
+                            <ListItemText primary="Current Location" />
                         </ListItem>
 
                         {results.map((result, index) => (
@@ -212,14 +210,11 @@ const BottomBar: React.FC<BottomBarProps> = ({ mapCenter, setMapCenter, setRadiu
                             justifyContent: 'space-between',
                             width: '100%',
                         }}>
-                            <Button variant="outlined" color="secondary" onClick={handleCancel} style={{ width: '40px', height: '50px', minWidth: '50px', minHeight: '50px', padding: 0, borderRadius: '15px' }}
->
-                                <FontAwesomeIcon icon={faX} size='2x' /> 
+                            <Button variant="outlined" color="secondary" onClick={handleCancel}>
+                                Cancel
                             </Button>
-                            <Button variant="contained" color="primary" onClick={handleNext} style={{ width: '40px', height: '50px', minWidth: '50px', minHeight: '50px', padding: 0, borderRadius: '15px' }}
->
-                                <FontAwesomeIcon icon={faCheck} size='2x' /> 
-
+                            <Button variant="contained" color="primary" onClick={handleNext}>
+                                Next
                             </Button>
                         </Box>
                     </Box>
