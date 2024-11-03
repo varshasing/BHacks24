@@ -5,6 +5,36 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMapMarkerAlt, faClock, faUsers, faLanguage, faGlobe, faPhone, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
 import { BACKEND_BASE_URL } from './base_urls';
 
+import { faBook, faGavel, faHome, faHeartbeat, faUtensils, faBriefcase, faChalkboardTeacher, faMoneyBillWave, faBrain, faHandsHelping } from '@fortawesome/free-solid-svg-icons';
+
+// Define a mapping of service types to icons
+const showIcon = (category: string) => {
+  switch (category) {
+      case 'Education':
+          return <FontAwesomeIcon icon={faBook} />;
+      case 'Legal':
+          return <FontAwesomeIcon icon={faGavel} />;
+      case 'Housing/Shelter':
+          return <FontAwesomeIcon icon={faHome} />;
+      case 'Healthcare':
+          return <FontAwesomeIcon icon={faHeartbeat} />;
+      case 'Food':
+          return <FontAwesomeIcon icon={faUtensils} />;
+      case 'Employment':
+          return <FontAwesomeIcon icon={faBriefcase} />;
+      case 'Community Education':
+          return <FontAwesomeIcon icon={faChalkboardTeacher} />;
+      case 'Cash Assistance':
+          return <FontAwesomeIcon icon={faMoneyBillWave} />;
+      case 'Mental Health Services':
+          return <FontAwesomeIcon icon={faBrain} />;
+      case 'Case Management':
+          return <FontAwesomeIcon icon={faHandsHelping} />;
+      default:
+          return null; // Or a default icon if preferred
+  }
+};
+
 interface ProfileProps {
   ID: string;
   name: string;
@@ -123,8 +153,14 @@ const Profile: React.FC<ProfileProps> = ({
         </Box>
 
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
-          {services.map((service, index) => (
-            <Chip key={index} label={service} variant="outlined" color="primary" />
+        {services.map((service, index) => (
+            <Chip
+              key={index}
+              icon={showIcon(service)} // Default icon if no mapping is found
+              label={service}
+              variant="outlined"
+              color="primary"
+            />
           ))}
         </Box>
 
