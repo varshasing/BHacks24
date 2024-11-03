@@ -1,19 +1,4 @@
-/**
- * Copyright 2024 Google LLC
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *    https://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-*/
-/* eslint-disable complexity */
+import React from 'react';
 import {
   forwardRef,
   useContext,
@@ -22,8 +7,9 @@ import {
   useRef
 } from 'react';
 
-import type {Ref} from 'react';
-import {GoogleMapsContext, latLngEquals} from '@vis.gl/react-google-maps';
+import type { Ref } from 'react';
+import { GoogleMapsContext, latLngEquals } from '@vis.gl/react-google-maps';
+import { Marker } from '@vis.gl/react-google-maps';
 
 type CircleEventProps = {
   onClick?: (e: google.maps.MapMouseEvent) => void;
@@ -54,7 +40,7 @@ function useCircle(props: CircleProps) {
     center,
     ...circleOptions
   } = props;
-  // This is here to avoid triggering the useEffect below when the callbacks change (which happen if the user didn't memoize them)
+
   const callbacks = useRef<Record<string, (e: unknown) => void>>({});
   Object.assign(callbacks.current, {
     onClick,
@@ -68,9 +54,6 @@ function useCircle(props: CircleProps) {
   });
 
   const circle = useRef(new google.maps.Circle()).current;
-  // update circleOptions (note the dependencies aren't properly checked
-  // here, we just assume that setOptions is smart enough to not waste a
-  // lot of time updating values that didn't change)
   circle.setOptions(circleOptions);
 
   useEffect(() => {
@@ -85,12 +68,10 @@ function useCircle(props: CircleProps) {
 
   const map = useContext(GoogleMapsContext)?.map;
 
-  // create circle instance and add to the map once the map is available
   useEffect(() => {
     if (!map) {
       if (map === undefined)
         console.error('<Circle> has to be inside a Map component.');
-
       return;
     }
 
@@ -101,11 +82,9 @@ function useCircle(props: CircleProps) {
     };
   }, [map]);
 
-  // attach and re-attach event-handlers when any of the properties change
   useEffect(() => {
     if (!circle) return;
 
-    // Add event listeners
     const gme = google.maps.event;
     [
       ['click', 'onClick'],
@@ -138,12 +117,25 @@ function useCircle(props: CircleProps) {
 }
 
 /**
- * Component to render a Google Maps Circle on a map
+ * Component to render a Google Maps Circle with a location marker icon at its center
  */
 export const Circle = forwardRef((props: CircleProps, ref: CircleRef) => {
+  const { center } = props;
   const circle = useCircle(props);
 
   useImperativeHandle(ref, () => circle);
 
-  return null;
+  return center ? (
+    <Marker
+      position={center}
+      icon={{
+        path: google.maps.SymbolPath.CIRCLE, // Use a custom icon or Google Maps symbol
+        scale: 8,
+        fillColor: "#4285F4", // Customize color
+        fillOpacity: 1,
+        strokeColor: "#FFFFFF",
+        strokeWeight: 2,
+      }}
+    />
+  ) : null;
 });
