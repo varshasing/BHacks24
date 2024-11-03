@@ -1,10 +1,12 @@
 import React from 'react';
-import { Box, Typography, IconButton, Chip, Divider, Link, Card, CardContent } from '@mui/material';
+import { Box, Typography, IconButton, Chip, Divider, Link, Card, CardContent, Button } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMapMarkerAlt, faClock, faUsers, faLanguage, faGlobe, faPhone } from '@fortawesome/free-solid-svg-icons';
+import { faMapMarkerAlt, faClock, faUsers, faLanguage, faGlobe, faPhone, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
+import { BACKEND_BASE_URL } from './base_urls';
 
 interface ProfileProps {
+  ID: string;
   name: string;
   services: string[];
   languages?: string[]; // Make optional
@@ -14,10 +16,12 @@ interface ProfileProps {
   demographics?: string;// Make optional
   summary?: string;     // Make optional
   hours?: string;       // Make optional
+  upvote: number;
   onBack: () => void;
 }
 
 const Profile: React.FC<ProfileProps> = ({
+  ID,
   name,
   services,
   summary,
@@ -27,6 +31,7 @@ const Profile: React.FC<ProfileProps> = ({
   languages,
   website,
   phone,
+  upvote,
   onBack,
 }) => {
   return (
@@ -108,6 +113,17 @@ const Profile: React.FC<ProfileProps> = ({
             )}
           </CardContent>
         </Card>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mt: 3 }}>
+  <Typography variant="h6" sx={{ mr: 1 }}>
+  </Typography>
+  <Button
+    variant="contained"
+    color="primary"
+    startIcon={<FontAwesomeIcon icon={faThumbsUp} />}
+  >
+    {upvote}
+  </Button>
+</Box>
       </Box>
     </Box>
   );

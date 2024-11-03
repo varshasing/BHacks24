@@ -1,6 +1,6 @@
 secrets.js
 .DS_Store
 */__pycache__/
-.vite/
+*/.vite/
 */env/
 */env/*

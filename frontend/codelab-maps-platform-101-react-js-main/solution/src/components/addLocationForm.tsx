@@ -238,7 +238,7 @@ const AddLocationForm: React.FC<AddLocationFormProps> = ({ open, onClose, center
           multiline
           rows={3}
           fullWidth
-          sx={{ mb: 2 }}
+          sx={{ mb: 0 }}
         />
 
         <FormControl component="fieldset" sx={{ width: '100%', mt: 2 }} error={serviceError}>
