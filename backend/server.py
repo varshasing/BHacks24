@@ -217,18 +217,20 @@ async def add_review(review: ReviewModel):
 
     return {"message": "Upvote added successfully"}
 
-@app.get("/reviews/", response_model=List[ReviewModel])
-async def get_all_reviews():
+@app.get("/reviews/{review_id}", response_model=ReviewModel)
+async def get_review(review_id: str):
     conn = create_connection()
     cursor = conn.cursor()
-    
-    # Select ID and upvote from the reviews table
-    cursor.execute("SELECT ID, upvote FROM reviews")
-    rows = cursor.fetchall()
+
+    # Select ID and upvote from the reviews table for the specific ID
+    cursor.execute("SELECT ID, upvote FROM reviews WHERE ID = ?", (review_id,))
+    row = cursor.fetchone()
     conn.close()
 
-    # Create a list of ReviewModel instances
-    reviews = [
-        ReviewModel(ID=row[0], upvote=row[1]) for row in rows
-    ]
-    return reviews
+    # If no review is found, raise a 404 error
+    if row is None:
+        raise HTTPException(status_code=404, detail="Review not found")
+
+    # Create a ReviewModel instance with the retrieved data
+    review = ReviewModel(ID=row[0], upvote=row[1])
+    return review
