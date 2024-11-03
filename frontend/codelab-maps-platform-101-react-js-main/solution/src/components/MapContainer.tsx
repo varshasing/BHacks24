@@ -56,6 +56,14 @@ interface MapContainerProps {
 const MapContainer: React.FC<MapContainerProps> = ({ locations, updateLocationPins, onMarkerClick, setLocations }) => {
     const defaultCenter = { lat: 42.35138, lng: -71.11551 };
     const map = useMap();
+  const [isMapLoaded, setIsMapLoaded] = useState(false);
+
+  useEffect(() => {
+    if (map) {
+      setIsMapLoaded(true); // Set state when the map has loaded
+    }
+  }, [map]);
+
     const [markers, setMarkers] = useState<{ [key: string]: google.maps.Marker }>({});
     const clusterer = useRef<MarkerClusterer | null>(null);
     const [radius, setRadius] = useState<number>(1); // in km
@@ -165,14 +173,24 @@ const MapContainer: React.FC<MapContainerProps> = ({ locations, updateLocationPi
             streetViewControl: false,      // Remove Street View control
           }}
             >
-                {locations.map((poi) => (
+          {isMapLoaded && locations.map((poi) => (
                     <AdvancedMarker
                         key={poi.name}
                         position={poi.location}
                         clickable
                         onClick={(ev) => handleMarkerClick(ev, poi)}
+                        options={{
+                          icon: {
+                            url: '/globe.png', // Replace with your image URL
+                            scaledSize: new google.maps.Size(40, 40), // Adjust the size as needed
+                          },
+                        }}
                     >
-                        <Pin background="#FBBC04" glyphColor="#000" borderColor="#000" />
+              <img
+                src={poi.upvote < 10 ? "/1.png" : (poi.upvote < 20 ? "/2.png" : "/3.png")} // Replace with your image URL
+                alt="Location Icon"
+                style={{ width: '30px', height: '45px' }} // Adjust the dimensions as needed
+              />
                     </AdvancedMarker>
                 ))}
                 {center && (

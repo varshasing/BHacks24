@@ -1,11 +1,27 @@
 import React, { useState, ChangeEvent, Dispatch, SetStateAction } from 'react';
-import { Box, TextField, List, ListItem, ListItemText, Typography, Slider, Button, FormControlLabel, Checkbox, Collapse } from '@mui/material';
+import { Box, TextField, List, ListItem, ListItemText, Typography, Slider, Button, FormControlLabel, Checkbox, Collapse, ListItemIcon } from '@mui/material';
 import { Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 
 import SearchIcon from '@mui/icons-material/Search';
 import { Poi } from '../app';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faLocation, faCheck, faX } from '@fortawesome/free-solid-svg-icons';
+import { faLocation, faCheck, faX, faSearch } from '@fortawesome/free-solid-svg-icons';
+import {
+    faBook,
+    faGavel,
+    faHome,
+    faHeartbeat,
+    faUtensils,
+    faBriefcase,
+    faChalkboardTeacher,
+    faMoneyBillWave,
+    faBrain,
+    faHandsHelping,
+} from '@fortawesome/free-solid-svg-icons';
+
+
+
+
 interface SearchResult {
     displayName: string;
     latitude: string;
@@ -35,6 +51,33 @@ const BottomBar: React.FC<BottomBarProps> = ({ mapCenter, setMapCenter, setRadiu
 
     const categories = ["Education", "Legal", "Housing/Shelter", "Healthcare", "Food", "Employment", "Community Education", "Cash Assistance", "Mental Health Services", "Case Management"];
 
+
+    const showIcon = (category: string) => {
+        switch (category) {
+            case 'Education':
+                return <FontAwesomeIcon icon={faBook} />;
+            case 'Legal':
+                return <FontAwesomeIcon icon={faGavel} />;
+            case 'Housing/Shelter':
+                return <FontAwesomeIcon icon={faHome} />;
+            case 'Healthcare':
+                return <FontAwesomeIcon icon={faHeartbeat} />;
+            case 'Food':
+                return <FontAwesomeIcon icon={faUtensils} />;
+            case 'Employment':
+                return <FontAwesomeIcon icon={faBriefcase} />;
+            case 'Community Education':
+                return <FontAwesomeIcon icon={faChalkboardTeacher} />;
+            case 'Cash Assistance':
+                return <FontAwesomeIcon icon={faMoneyBillWave} />;
+            case 'Mental Health Services':
+                return <FontAwesomeIcon icon={faBrain} />;
+            case 'Case Management':
+                return <FontAwesomeIcon icon={faHandsHelping} />;
+            default:
+                return null; // Or a default icon if preferred
+        }
+    };
     const handleCancel = () => {
         setSearchingFocus(false);
         setFocused(false);
@@ -65,6 +108,7 @@ const BottomBar: React.FC<BottomBarProps> = ({ mapCenter, setMapCenter, setRadiu
 
     const handleSearchOptions = () => {
         if (mapCenter) {
+            console.log('Searching for:', selectedOptions[0], mapCenter.lat, mapCenter.lng, radius / 2.0);
             updateLocationPins(selectedOptions[0], mapCenter.lat, mapCenter.lng, radius / 2.0, setLocations);
         }
         handleCancel();
@@ -238,24 +282,41 @@ const BottomBar: React.FC<BottomBarProps> = ({ mapCenter, setMapCenter, setRadiu
                     <Typography variant="h6">Select Service</Typography>
                     <Box sx={{ width: '100%', mt: 2 }}>
                         <FormControl fullWidth>
-                            <InputLabel>Select Service</InputLabel>
+                            <InputLabel>Select a Service</InputLabel>
                             <Select
                                 value={selectedOptions[0] || ''}
                                 onChange={(event) => setSelectedOptions([event.target.value])}
                                 label="Select Service"
+                                renderValue={(selected) => (
+                                    <Box display="flex" alignItems="center">
+                                        <ListItemIcon>{showIcon(selected)}</ListItemIcon>
+                                        <ListItemText primary={selected}  />
+                                    </Box>
+                                )}
                             >
                                 {categories.map((category) => (
                                     <MenuItem key={category} value={category}>
-                                        {category}
+                                        <ListItemIcon>
+                                            {showIcon(category)}
+                                        </ListItemIcon>
+                                        <ListItemText primary={category} />
                                     </MenuItem>
                                 ))}
                             </Select>
                         </FormControl>
                     </Box>
 
-                    <Button variant="contained" color="primary" sx={{ mt: 2 }} onClick={handleSearchOptions}>
+
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        sx={{ mt: 2 }}
+                        onClick={handleSearchOptions}
+                    >
+                        <FontAwesomeIcon icon={faSearch} style={{ marginRight: '8px' }} />
                         Search
                     </Button>
+
                 </Box>
             </Collapse>
         </Box>
