@@ -17,6 +17,7 @@ import MapContainer from './components/MapContainer';
 import {Button} from '@mui/material';
 import { BACKEND_BASE_URL } from './components/base_urls';
 export type Poi = {
+  ID: string;
   location: google.maps.LatLngLiteral;
   name: string;
   services: string[];
@@ -27,6 +28,7 @@ export type Poi = {
   demographics: string;
   summary: string;
   hours: string;
+  upvote: number;
 };
 
 interface Location {
@@ -45,6 +47,7 @@ interface Location {
   languages: string[];
   googlelink: string;
   source: string;
+  upvote: number;
 }
 
 async function searchLocations(query: string, lat: number, lng: number, radius: number): Promise<Location[]> {
@@ -69,6 +72,7 @@ const updateLocations = async (query: string, lat: number, lng: number, radius: 
     // console.log("LOCATION1", location.coordinates[1], location.coordinates[1]);
 
     const poi: Poi = {
+      ID: location.ID,
       location: { lat: location.coordinates[0][0], lng: location.coordinates[0][1]},
       name: location.name,
       services: location.servicetype,
@@ -78,7 +82,8 @@ const updateLocations = async (query: string, lat: number, lng: number, radius: 
       website: location.website,
       demographics: location.demographic,
       summary: location.summary,
-      hours: location.hours
+      hours: location.hours,
+      upvote: location.upvote,
     };
     parsedLocations.push(poi);
   })
@@ -89,18 +94,20 @@ const updateLocations = async (query: string, lat: number, lng: number, radius: 
 
 const App = () => {
   const [locations, setLocations] = useState<Poi[]>([
-    // {
-    //   location: { lat: 42.35139, lng: -71.11552 },
-    //   name: 'Boston University Student Health Services',
-    //   services: ['Healthcare', 'Mental Health Services'],
-    //   summary: 'Boston University Student Health Services provides a variety of healthcare services to students, including primary care, mental health services, and more.',
-    //   address: '881 Commonwealth Ave, Boston, MA 02215',
-    //   hours: '9:00am - 4:30pm',
-    //   demographics: 'Students',
-    //   languages: ['English'],
-    //   website: 'bu.edu/shs',
-    //   phone: '617-353-3575',
-    // }
+    {
+      ID: 'hello',
+      location: { lat: 42.35139, lng: -71.11552 },
+      name: 'Boston University Student Health Services',
+      services: ['Healthcare', 'Mental Health Services'],
+      summary: 'Boston University Student Health Services provides a variety of healthcare services to students, including primary care, mental health services, and more.',
+      address: '881 Commonwealth Ave, Boston, MA 02215',
+      hours: '9:00am - 4:30pm',
+      demographics: 'Students',
+      languages: ['English'],
+      website: 'bu.edu/shs',
+      phone: '617-353-3575',
+      upvote: 5,
+    }
   ]);
   const [selectedLocation, setSelectedLocation] = useState<Poi | null>(null);
   const handleBack = () => {
@@ -117,6 +124,7 @@ const App = () => {
       />
       {selectedLocation && (
         <Profile
+          ID={selectedLocation.ID}
           name={selectedLocation.name}
           services={selectedLocation.services}
           languages={selectedLocation.languages}
@@ -126,6 +134,7 @@ const App = () => {
           demographics={selectedLocation.demographics}
           summary={selectedLocation.summary}
           hours={selectedLocation.hours}
+          upvote={selectedLocation.upvote}
           onBack={handleBack}
         />
       )}
