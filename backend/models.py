@@ -48,11 +48,8 @@ class ServiceInput(BaseModel):
         orm_mode = True
 
 class ReviewModel(BaseModel):
-    service_id: str
-    review: str
+    ID: str
     upvote: int
 
-class ServiceReviewsModel(BaseModel):
-    service_id: str
-    reviews: List[str]
-    upvote: int
+    class Config:
+        orm_mode = True
