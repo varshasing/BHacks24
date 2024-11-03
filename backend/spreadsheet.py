@@ -99,7 +99,7 @@ def main():
     services = fetch_and_process_spreadsheet_data(
         'UrbanRefugeAidServices', 
         'balmy-virtue-440518-c9-1dbeaecb35aa.json'
-    )
+    , ["Food"])
     for service in services:
         print(service.__dict__)
 
