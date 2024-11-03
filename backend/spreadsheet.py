@@ -43,7 +43,7 @@ def fetch_and_process_spreadsheet_data(sheet_name, json_key_path):
 
     # Process data and create Service instances
     services = []
-    for i, row in data:
+    for row in data:
         address_list = row["Address"].split(";")
         coordinate_list = []
         for address in address_list:
@@ -70,7 +70,6 @@ def fetch_and_process_spreadsheet_data(sheet_name, json_key_path):
             languages=row["Services offered in these languages"],
             googlelink=False,
             source="Urban Refuge Aid"
-
         )
         services.append(service)
     
