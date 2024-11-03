@@ -76,7 +76,7 @@ def map_to_service(place_data, query):
         extrafilters=None,
         demographic=None,
         website=place_data.get("website") if place_data.get("website") else None,
-        summary=place_data.get("editorial_summary") if place_data.get("editorial_summary") else None,
+        summary=place_data.get("editorial_summary", {}).get("overview", "") if place_data.get("editorial_summary") else None,
         address=place_data.get("formatted_address") if place_data.get("formatted_address") else None,
         coordinates=place_data.get("geometry", {}).get("location") if place_data.get("geometry", {}).get("location") else None,
         neighborhoods=None,

@@ -53,7 +53,6 @@ TODO:
 varsha:
 we want when we call the fastAPI, to only return things from the spreadsheet that match the query
     spreadsheet parser needs to be able to filter by query
-we need a filter for this appended list. need to make sure there are no duplicates
 
 why are somethings NULL instead of ""
 
