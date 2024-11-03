@@ -7,6 +7,7 @@ import json
 import ast
 import math
 from models import ServiceModel, ReviewModel, ServiceReviewsModel, ServiceInput
+from map import remove_duplicates
 
 
 app = FastAPI()
@@ -27,7 +28,7 @@ async def get_combined_services(query: str, lat: float, lng: float, radius: floa
         query
     )
     places_services = find_places(query, lat, lng, radius)
-    combined_services = spreadsheet_services + places_services
+    combined_services = remove_duplicates(spreadsheet_services, places_services)
 
     services_dict = [
         ServiceModel(

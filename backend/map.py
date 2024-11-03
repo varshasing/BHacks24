@@ -24,13 +24,17 @@ def load_secrets():
 # returns list of services that are unique, based on coordinates
 def remove_duplicates(sheets_services, query_services):
     # merge the two lists and then check the coordinates field for duplicates
-    merged = sheets_services + query_services
-    unique_services = []
-    for service in merged:
-        if service.coordinates not in [s.coordinates for s in unique_services]:
-            unique_services.append(service)
+    merged_services = []
+    # choose all sheets services
+    for service in sheets_services:
+        merged_services.append(service)
 
-    return unique_services
+    # add if the coordinates are not in merged services, url is not false
+    for service in query_services:
+        if service.coordinates[0] not in [s.coordinates[0] for s in merged_services] and service.coordinates[1] not in [s.coordinates[1] for s in merged_services] and service.ID:
+            merged_services.append(service)
+
+    return merged_services
     
 
     
