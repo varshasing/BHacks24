@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, IconButton, Chip, Divider, Link, Card, CardContent } from '@mui/material';
+import { Box, Typography, IconButton, Chip, Divider, Link, Card, CardContent, Button } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMapMarkerAlt, faClock, faUsers, faLanguage, faGlobe, faPhone } from '@fortawesome/free-solid-svg-icons';
@@ -14,7 +14,9 @@ interface ProfileProps {
   demographics?: string;// Make optional
   summary?: string;     // Make optional
   hours?: string;       // Make optional
+  upvotes: number;
   onBack: () => void;
+  onUpvote: () => void;
 }
 
 const Profile: React.FC<ProfileProps> = ({
@@ -27,7 +29,9 @@ const Profile: React.FC<ProfileProps> = ({
   languages,
   website,
   phone,
+  upvotes,
   onBack,
+  onUpvote,
 }) => {
   return (
     <Box
@@ -108,6 +112,19 @@ const Profile: React.FC<ProfileProps> = ({
             )}
           </CardContent>
         </Card>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mt: 3 }}>
+  <Typography variant="h6" sx={{ mr: 1 }}>
+    {upvotes} Upvotes
+  </Typography>
+  <Button
+    variant="contained"
+    color="primary"
+    onClick={onUpvote}
+    startIcon={<FontAwesomeIcon icon={faThumbsUp} />}
+  >
+    Upvote
+  </Button>
+</Box>
       </Box>
     </Box>
   );
