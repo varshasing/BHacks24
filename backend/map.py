@@ -21,6 +21,19 @@ query_dict = {
 def load_secrets():
     with open("secrets.json") as secrets_file:
         return json.load(secrets_file)
+
+# returns list of services that are unique, based on coordinates
+def remove_duplicates(sheets_services, query_services):
+    # merge the two lists and then check the coordinates field for duplicates
+    merged = sheets_services + query_services
+    unique_services = []
+    for service in merged:
+        if service.coordinates not in [s.coordinates for s in unique_services]:
+            unique_services.append(service)
+
+    return unique_services
+    
+
     
 def get_place_details(place_id):
     secrets = load_secrets()
