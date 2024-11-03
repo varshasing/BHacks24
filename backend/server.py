@@ -2,12 +2,15 @@ from fastapi import FastAPI, HTTPException
 from spreadsheet import fetch_and_process_spreadsheet_data, hash_organization_name
 from map import find_places
 from typing import List
-from database import create_connection
+from database import create_connection, get_upvote_by_id, create_table
 import json
 from models import ServiceModel, ServiceInput, ReviewModel
 from starlette.middleware.cors import CORSMiddleware
 import ast
 import math
+from models import ServiceModel, ReviewModel, ServiceReviewsModel, ServiceInput
+from map import remove_duplicates
+
 
 
 app = FastAPI()
@@ -19,6 +22,11 @@ app.add_middleware(
     allow_methods=["*"],  # Allows all HTTP methods
     allow_headers=["*"],  # Allows all headers
 )
+
+
+@app.on_event("startup")
+async def startup_event():
+    create_table()
 
 @app.get("/services", response_model=List[ServiceModel])
 #fix it so that it can take multiple query parameters
@@ -35,7 +43,7 @@ async def get_combined_services(query: str, lat: float, lng: float, radius: floa
         query
     )
     places_services = find_places(query, lat, lng, radius)
-    combined_services = spreadsheet_services + places_services
+    combined_services = remove_duplicates(spreadsheet_services, places_services)
 
     services_dict = [
         ServiceModel(
@@ -43,7 +51,8 @@ async def get_combined_services(query: str, lat: float, lng: float, radius: floa
             extrafilters=service.extrafilters.split(', ') if isinstance(service.extrafilters, str) else (service.extrafilters or []),
             languages=[service.languages] if isinstance(service.languages, str) else (service.languages or []),
             googlelink=str(service.googlelink) if isinstance(service.googlelink, bool) else service.googlelink,
-            **{k: v for k, v in vars(service).items() if k not in {'servicetype', 'extrafilters', 'languages', 'googlelink'}}
+            upvote=get_upvote_by_id(str(hash_organization_name(service.name))),
+            **{k: v for k, v in vars(service).items() if k not in {'servicetype', 'extrafilters', 'languages', 'googlelink', 'upvote'}}
         )
         for service in combined_services
     ]
@@ -62,7 +71,7 @@ def parse_service_row(row: dict) -> ServiceModel:
         coordinates = ()
 
     service = ServiceModel(
-        ID= str(row['id']),
+        ID= str(row['ID']),
         name=row['name'],
         coordinates=coordinates, 
         servicetype=json.loads(row["services"]) if row.get("services") else [],  
@@ -76,7 +85,8 @@ def parse_service_row(row: dict) -> ServiceModel:
         phone=row["phone"] if row.get("phone") else None,
         languages=json.loads(row["languages"]) if row.get("languages") else [], 
         googlelink=None, 
-        source="User Input"
+        source="User Input",
+        upvote=get_upvote_by_id(str(row['ID']))
     )
     return service
 
@@ -142,7 +152,7 @@ async def add_service(service_input: ServiceInput):
 
     # Create an instance of ServiceModel with the input data
     service = ServiceModel(
-        ID=str(service_id),
+        ID= str(service_id),
         name=service_input.name,
         servicetype=service_input.services,  # Map 'services' to 'servicetype'
         extrafilters=None,  # Handle as needed
@@ -156,7 +166,8 @@ async def add_service(service_input: ServiceInput):
         summary=service_input.notes,  # Assuming 'notes' maps to 'summary'
         demographic=None,  # Handle as needed
         googlelink=None,  # Handle as needed
-        source="User Input"
+        source="User Input",
+        upvote = get_upvote_by_id(str(service_id))
     )
 
     conn = create_connection()
@@ -165,8 +176,8 @@ async def add_service(service_input: ServiceInput):
         '''
         INSERT INTO services (ID, name, servicetype, extrafilters, demographic, website,
                               summary, address, coordinates, neighborhoods, hours, phone,
-                              languages, googlelink, source)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                              languages, googlelink, source, upvote)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''',
         (
             service.ID,
@@ -183,7 +194,8 @@ async def add_service(service_input: ServiceInput):
             service.phone,
             json.dumps(service.languages), 
             service.googlelink,
-            service.source
+            service.source,
+            service.upvote
         )
     )
     conn.commit()
@@ -229,7 +241,7 @@ async def get_review(review_id: str):
 
     # If no review is found, raise a 404 error
     if row is None:
-        raise HTTPException(status_code=404, detail="Review not found")
+        review = ReviewModel(ID=review_id, upvote=0)
 
     # Create a ReviewModel instance with the retrieved data
     review = ReviewModel(ID=row[0], upvote=row[1])
