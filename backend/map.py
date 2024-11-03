@@ -86,7 +86,7 @@ def map_to_service(place_data, query):
     return Service(
         ID=place_data.get("url") if place_data.get("url") else None,
         name=place_data.get("name") if place_data.get("name") else None,
-        servicetype=query,
+        servicetype=[query],
         extrafilters=None,
         demographic=None,
         website=place_data.get("website") if place_data.get("website") else None,
@@ -96,7 +96,7 @@ def map_to_service(place_data, query):
         neighborhoods=None,
         hours=None,  
         phone=place_data.get("formatted_phone_number") if place_data.get("formatted_phone_number") else None,
-        languages="English", 
+        languages=["English"], 
         googlelink=place_data.get("url") if place_data.get("url") else None,
         source="Google Maps API"
     )
