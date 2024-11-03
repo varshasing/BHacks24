@@ -9,6 +9,7 @@ import json
 from models import ServiceModel, ReviewModel, ServiceReviewsModel
 
 app = FastAPI()
+is_firsttime = True
 
 @app.get("/services", response_model=List[ServiceModel])
 #fix it so that it can take multiple query parameters
@@ -151,3 +152,6 @@ async def get_all_reviews():
         ServiceReviewsModel(service_id=row[0], reviews=json.loads(row[1])) for row in rows
     ]
     return service_reviews
+
+
+# right now only works for one service type. Food, Shelter doesn't work
