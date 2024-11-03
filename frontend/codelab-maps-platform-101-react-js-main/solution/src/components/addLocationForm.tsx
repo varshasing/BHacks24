@@ -1,5 +1,6 @@
 // components/AddLocationForm.tsx
 import React, { useState } from 'react';
+import { Poi } from '../app';
 import {
   Box,
   Button,
@@ -27,13 +28,56 @@ const categories = [
   "Case Management",
 ];
 
+const addLocationAPICall = async (poiData: Poi) => {
+  // Transform Poi data to match the API schema
+  const apiData = {
+    name: poiData.name,
+    addr: poiData.address,
+    hours: poiData.hours,
+    languages: poiData.languages,
+    website: poiData.website,
+    phone: poiData.phone,
+    notes: poiData.summary, // Assuming 'notes' corresponds to 'summary'
+    services: poiData.services,
+    coordinates: [
+      poiData.location.lat.toString(),
+      poiData.location.lng.toString()
+    ]
+  };
+
+  try {
+    const response = await fetch("http://127.0.0.1:8000/locations", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(apiData)
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to add location: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    console.log("Location added successfully:", result);
+    return result;
+  } catch (error) {
+    console.error("Error adding location:", error);
+    throw error;
+  }
+};
+
+
+
 interface AddLocationFormProps {
   open: boolean; // Controls form visibility
   onClose: () => void; // Callback to close the form
+  center: google.maps.LatLngLiteral | null; // Center of the map
   onSubmit: (formData: any) => void; // Replace `any` with a specific type if you have one
+  setLocationPins: React.Dispatch<React.SetStateAction<Poi[]>>;
 }
 
-const AddLocationForm: React.FC<AddLocationFormProps> = ({ open, onClose, onSubmit }) => {
+const AddLocationForm: React.FC<AddLocationFormProps> = ({ open, onClose, center, onSubmit, setLocationPins }) => {
   const [formData, setFormData] = useState({
     name: '',
     address: '',
@@ -67,10 +111,30 @@ const AddLocationForm: React.FC<AddLocationFormProps> = ({ open, onClose, onSubm
 
     // Check if at least one service type is selected
     const isAnyServiceSelected = Object.values(formData.services).some(value => value === true);
-    if (!isAnyServiceSelected) {
+    if (!isAnyServiceSelected || !center) {
       setServiceError(true);
       return;
     }
+
+    // Convert data to POI format
+    const poiData : Poi = {
+      location: { lat: center.lat, lng: center.lng },
+      name: formData.name,
+      services: Object.entries(formData.services)
+        .filter(([_, value]) => value)
+        .map(([key]) => key),
+      languages: formData.languages.split(',').map(lang => lang.trim()),
+      phone: formData.phone,
+      address: formData.address,
+      website: formData.website,
+      demographics: formData.demographics,
+      summary: formData.summary,
+      hours: formData.hours,
+    };
+    // call api on POI data
+    addLocationAPICall(poiData);
+    // add new location to the map?
+    setLocationPins(prevPins => [...prevPins, poiData]);
 
     onSubmit(formData);
     onClose(); // Close the form after submission

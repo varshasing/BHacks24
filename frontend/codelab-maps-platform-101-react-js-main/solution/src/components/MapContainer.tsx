@@ -234,8 +234,10 @@ const MapContainer: React.FC<MapContainerProps> = ({ locations, updateLocationPi
             
             <AddLocationForm
                 open={isFormOpen}
+                center={center}
                 onClose={handleCloseForm}
                 onSubmit={handleFormSubmit}
+                setLocationPins={setLocations}
             />
         </>
     );
