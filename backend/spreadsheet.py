@@ -4,7 +4,7 @@ from google.oauth2.service_account import Credentials
 from service import Service
 import math
 import hashlib
-# import map
+import map
 
 def hash_organization_name(name):
     return hashlib.sha256(name.encode()).hexdigest()
@@ -23,6 +23,7 @@ def filtering_service_type(service_list, service_types):
     filtered_list = []
 
     for service in service_list:
+        # Check if there's an intersection
         if any(service_type in service.servicetype for service_type in service_types):
             filtered_list.append(service)
     return filtered_list
@@ -100,19 +101,21 @@ def fetch_and_process_spreadsheet_data(sheet_name, json_key_path, lat, lng, radi
 
 def filter_by_distance(services, lat, lng, radius):
     filtered_services = []
-    
+
     for service in services:
-        if isinstance(service.coordinates, dict):
-            coordinates_list = [service.coordinates]  
-        else:
-            coordinates_list = service.coordinates
-        
-        for coordinates in coordinates_list:
-            if calculate_distance(lat, lng, coordinates['lat'], coordinates['lng']) <= radius:
+        print(service.coordinates)
+
+        # Assuming coordinates is a list of tuples (lat, lng)
+        for coordinates in service.coordinates:
+            # Unpack the coordinates tuple
+            service_lat, service_lng = coordinates
+
+            if calculate_distance(lat, lng, service_lat, service_lng) <= radius:
                 filtered_services.append(service)
-                break 
+                break  # Only add the service once if it meets the distance condition
 
     return filtered_services
+
 
 
 import math
@@ -152,18 +155,16 @@ def calculate_distance(lat1, lng1, lat2, lng2):
 def main():
     lat = 42.3601
     lng = -71.0589
-    radius = 500  #500m
+    radius = 5000  #500m
 
     services = fetch_and_process_spreadsheet_data(
         'UrbanRefugeAidServices',
-        'balmy-virtue-440518-c9-1dbeaecb35aa.json', lat, lng, radius, ["food"]
+        'balmy-virtue-440518-c9-1dbeaecb35aa.json', lat, lng, radius, ["Food"]
     )
-    filtered_services = filter_by_distance(services, lat, lng, radius)
-    for service in filtered_services:
-        print(service)
-
+    #filtered_services = filter_by_distance(services, lat, lng, radius)
     for service in services:
         print(service.__dict__)
+    print("done")
 
 if __name__ == "__main__":
     main()

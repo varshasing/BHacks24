@@ -13,17 +13,17 @@ app = FastAPI()
 class ServiceModel(BaseModel):
     ID: str
     name: str
-    servicetype: str
-    extrafilters: Optional[str] = None
+    servicetype: List[str]
+    extrafilters: Optional[List[str]]
     demographic: Optional[str] = None
     website: Optional[str] = None
     summary: Optional[str] = None
-    address: str
-    coordinates: Dict[str, float]  
+    address: List[str]
+    coordinates: Optional[tuple] = None
     neighborhoods: Optional[str] = None
     hours: Optional[str] = None
     phone: Optional[str] = None
-    languages: Optional[str] = None
+    languages: List[str]
     googlelink: Optional[str] = None
     source: Optional[str] = None
 
@@ -32,23 +32,36 @@ class ServiceModel(BaseModel):
 
 @app.get("/services", response_model=List[ServiceModel])
 #fix it so that it can take multiple query parameters
-async def get_combined_services(query: str, lat: float, lng: float, radius: int):
-    #convert miles to meter
+async def get_combined_services(query: str, lat: float, lng: float, radius: float):
+    # Convert miles to meters
     radius = radius * 1609.34
-    
+
     spreadsheet_services = fetch_and_process_spreadsheet_data(
         'UrbanRefugeAidServices', 
-        'balmy-virtue-440518-c9-1dbeaecb35aa.json'
+        'balmy-virtue-440518-c9-1dbeaecb35aa.json',
+        lat,
+        lng,
+        radius,
+        query
     )
     places_services = find_places(query, lat, lng, radius)
     combined_services = spreadsheet_services + places_services
 
-    services_dict = [ServiceModel(**vars(service)) for service in combined_services]
+    services_dict = [
+        ServiceModel(
+            servicetype=[service.servicetype] if isinstance(service.servicetype, str) else service.servicetype,
+            extrafilters=service.extrafilters.split(', ') if isinstance(service.extrafilters, str) else (service.extrafilters or []),
+            languages=[service.languages] if isinstance(service.languages, str) else (service.languages or []),
+            googlelink=str(service.googlelink) if isinstance(service.googlelink, bool) else service.googlelink,
+            **{k: v for k, v in vars(service).items() if k not in {'servicetype', 'extrafilters', 'languages', 'googlelink'}}
+        )
+        for service in combined_services
+    ]
     
     return services_dict
 
 # to run the server, use the command:
-# uvicorn server:app --reload
+#uvicorn server:app --reload
 
 
 '''

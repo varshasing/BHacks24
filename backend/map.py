@@ -1,7 +1,6 @@
 import requests
 import json
 from service import Service
-from spreadsheet import filter_by_distance, calculate_distance
 
 
 # A dictionary with these keys: Education, Legal, Housing/Shelter, Healthcare, Food, Employment, Community Education, Cash Assistance, Mental Health Services, Case Management
@@ -86,17 +85,17 @@ def map_to_service(place_data, query):
     return Service(
         ID=place_data.get("url") if place_data.get("url") else None,
         name=place_data.get("name") if place_data.get("name") else None,
-        servicetype=query,
+        servicetype=query if isinstance(query, list) else [query],  # Ensure servicetype is a list
         extrafilters=None,
         demographic=None,
         website=place_data.get("website") if place_data.get("website") else None,
         summary=place_data.get("editorial_summary", {}).get("overview", "") if place_data.get("editorial_summary") else None,
-        address=place_data.get("formatted_address") if place_data.get("formatted_address") else None,
-        coordinates=place_data.get("geometry", {}).get("location") if place_data.get("geometry", {}).get("location") else None,
+        address=place_data.get("formatted_address").split(";") if place_data.get("formatted_address") else [],  # Assuming multiple addresses are separated by ';'
+        coordinates=[(place_data.get("geometry", {}).get("location").get("lat"), place_data.get("geometry", {}).get("location").get("lng"))] if place_data.get("geometry", {}).get("location") else [],  # Ensure coordinates are in a list of tuples
         neighborhoods=None,
-        hours=None,  
+        hours=None,
         phone=place_data.get("formatted_phone_number") if place_data.get("formatted_phone_number") else None,
-        languages="English", 
+        languages=["English"], 
         googlelink=place_data.get("url") if place_data.get("url") else None,
         source="Google Maps API"
     )
