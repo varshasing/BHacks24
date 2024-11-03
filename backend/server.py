@@ -7,8 +7,17 @@ from typing import List, Optional, Dict
 from database import create_connection
 import json
 from models import ServiceModel, ReviewModel, ServiceReviewsModel
+from starlette.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+# Allow CORS for all origins (not recommended for production)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all HTTP methods
+    allow_headers=["*"],  # Allows all headers
+)
 
 @app.get("/services", response_model=List[ServiceModel])
 #fix it so that it can take multiple query parameters
