@@ -2,7 +2,7 @@ import React, { useState, ChangeEvent } from 'react';
 import { Box, TextField, List, ListItem, ListItemText } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { Slider, Typography } from '@mui/material';
-
+import {Button} from '@mui/material';
 interface SearchResult {
     displayName: string;
     latitude: string;
@@ -46,6 +46,19 @@ const BottomBar: React.FC<BottomBarProps> = ({ setMapCenter, setRadius, radius }
     const [results, setResults] = useState<SearchResult[]>([]);
     const [selectedLocation, setSelectedLocation] = useState<SearchResult | null>(null);
     const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
+
+
+    const handleCancel = () => {
+        setQuery('');
+        setResults([]);
+        setSelectedLocation(null);
+        setSearchingFocus(false);
+    };
+
+    const handleNext = () => {
+        console.log("Proceeding to the next step with location:", selectedLocation);
+    };
+
 
     const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {
         const newQuery = event.target.value;
@@ -127,6 +140,7 @@ const BottomBar: React.FC<BottomBarProps> = ({ setMapCenter, setRadius, radius }
             >
                 <SearchIcon sx={{ color: 'grey.600', mr: 1 }} />
                 <TextField
+                    autoComplete="off"
                     placeholder="Search location"
                     variant="standard"
                     fullWidth
@@ -208,6 +222,23 @@ const BottomBar: React.FC<BottomBarProps> = ({ setMapCenter, setRadius, radius }
                             {radius + "km"}
                         </Typography>
                     </Box>
+                    {/* Add Cancel and Next buttons */}
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            mt: 3,
+                            width: '100%',
+                        }}
+                    >
+                        <Button variant="outlined" color="secondary" onClick={handleCancel}>
+                            Cancel
+                        </Button>
+                        <Button variant="contained" color="primary" onClick={handleNext} disabled={!selectedLocation}>
+                            Next
+                        </Button>
+                    </Box>
+
                 </Box>
             )}
         </Box>
