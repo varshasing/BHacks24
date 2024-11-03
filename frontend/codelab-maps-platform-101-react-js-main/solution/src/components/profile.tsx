@@ -1,4 +1,3 @@
-// components/Profile.tsx
 import React from 'react';
 import { Box, Typography, IconButton, Chip, Divider, Link, Card, CardContent } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
