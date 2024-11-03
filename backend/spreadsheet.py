@@ -70,7 +70,7 @@ def fetch_and_process_spreadsheet_data(sheet_name, json_key_path, service_types)
                 coordinates = map.get_coordinates(address)
                 coordinate_list.append(coordinates)
         
-        org_name = row["Name of Organization"]
+        org_name = row["Name of Organization "]
         unique_id = hash_organization_name(org_name)
 
         service = Service(
