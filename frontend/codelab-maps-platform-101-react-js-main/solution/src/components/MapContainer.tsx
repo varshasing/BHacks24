@@ -10,6 +10,9 @@ import BottomBar from './bottombar';
 import { MapCameraChangedEvent } from '@vis.gl/react-google-maps';
 import { Circle } from './circle';
 import { Button } from '@mui/material';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faMap, faEye, faEdit } from '@fortawesome/free-solid-svg-icons';
+
 type Poi = {
     location: google.maps.LatLngLiteral;
     name: string;
@@ -29,12 +32,14 @@ interface MapContainerProps {
 }
 
 const MapContainer: React.FC<MapContainerProps> = ({ locations, onMarkerClick }) => {
+    const defaultCenter = { lat: -33.860664, lng: 151.208138 };
     const map = useMap();
     const [markers, setMarkers] = useState<{ [key: string]: google.maps.Marker }>({});
     const clusterer = useRef<MarkerClusterer | null>(null);
     const [radius, setRadius] = useState<number>(1); // in km
-    const [center, setCenter] = useState<google.maps.LatLngLiteral | null>(null);
+    const [center, setCenter] = useState<google.maps.LatLngLiteral | null>(defaultCenter);
     const [isStreetView, setIsStreetView] = useState(false);
+    const [showButtons, setShowButtons] = useState(true);
 
     const handleMarkerClick = useCallback(
         (ev: google.maps.MapMouseEvent, location: Poi) => {
@@ -49,6 +54,7 @@ const MapContainer: React.FC<MapContainerProps> = ({ locations, onMarkerClick })
     useEffect(() => {
         if (!map || clusterer.current) return;
         clusterer.current = new MarkerClusterer({ map });
+        map.
         setCenter(map.getCenter()?.toJSON() ?? null); // Set initial center
     }, [map]);
 
@@ -62,16 +68,18 @@ const MapContainer: React.FC<MapContainerProps> = ({ locations, onMarkerClick })
 
     const toggleStreetView = useCallback(() => {
         if (map) {
+            console.log('toggle street view');
           const streetView = map.getStreetView();
-          const mapCenter = map.getCenter();
-    
+          console.log("streetview obj", streetView);
+          const mapCenter = center;
+          streetView.setPosition(mapCenter);
+          streetView.setPov({ heading: 0, pitch: 0 });
+          console.log('mapCenter:', mapCenter);
           if (isStreetView) {
             // Exit Street View
             streetView.setVisible(false);
           } else {
             // Enter Street View at the current map center
-            streetView.setPosition(mapCenter);
-            streetView.setPov({ heading: 0, pitch: 0 });
             streetView.setVisible(true);
           }
           setIsStreetView(!isStreetView); // Toggle state
@@ -80,21 +88,37 @@ const MapContainer: React.FC<MapContainerProps> = ({ locations, onMarkerClick })
 
     return (
         <>
+        <a href='https://www.urbanrefuge.org/' target='_blank'>
+          <img
+            src={'/ur_logo.png'}
+            alt="Logo"
+            style={{
+              position: 'fixed',
+              top: '20px',
+              left: '20px',
+              width: '75px', // Adjust width as needed
+              height: 'auto',
+              zIndex: 2000,
+              borderRadius: '8px', // Adjust the radius as needed for roundness
+            }}
+          />
+        </a>
+        
             <Map
                 mapId="da37f3254c6a6d1c"
                 defaultZoom={13}
-                defaultCenter={{ lat: -33.860664, lng: 151.208138 }}
+                defaultCenter={defaultCenter}
                 onCameraChanged={(ev: MapCameraChangedEvent) => {
                     const newCenter = ev.detail.center;
                     console.log('camera changed:', newCenter, 'zoom:', ev.detail.zoom);
                     setCenter(newCenter); // Update circle center when camera changes
                 }}
-                options={{
-                    mapTypeControl: false,  // Remove map/satellite toggle
-                    zoomControl: false,      // Remove zoom buttons
-                    fullscreenControl: false, // Optional: Remove fullscreen button
-                    streetViewControl: false, // Optional: Remove Street View control
-                  }}
+          options={{
+            mapTypeControl: false,         // Remove map/satellite toggle
+            zoomControl: false,            // Remove zoom buttons
+            fullscreenControl: false,      // Remove fullscreen button
+            streetViewControl: false,      // Remove Street View control
+          }}
             >
                 {locations.map((poi) => (
                     <AdvancedMarker
@@ -120,21 +144,49 @@ const MapContainer: React.FC<MapContainerProps> = ({ locations, onMarkerClick })
                     />
                 )}
             </Map>
-            <BottomBar setMapCenter={setMapCenter} radius={radius} setRadius={setRadius} />
-
+            <BottomBar setMapCenter={setMapCenter} radius={radius} setRadius={setRadius} setShowButtons={setShowButtons}/>
+            { showButtons && (
+              <>
             <Button
+              variant="contained"
+              color="primary"
+              onClick={() => { console.log('edit button clicked') }}
+              sx={{
+                position: 'fixed',
+                bottom: '80px',
+                right: '80px',
+                zIndex: 1500,
+                width: '48px', // Twice the default size (48px)
+                height: '48px', // Same as width for a circular shape
+                borderRadius: '50%', // Makes the button circular
+                minWidth: '0px', // Prevents default button minWidth from affecting the size
+              }}
+            >
+              <FontAwesomeIcon icon={faEdit} size="2x" />
+            </Button>
+              <Button
                 variant="contained"
                 color="primary"
                 onClick={toggleStreetView}
                 sx={{
-                position: 'fixed',
-                bottom: '80px',
-                right: '20px',
-                zIndex: 1500,
+                  position: 'fixed',
+                  bottom: '80px',
+                  right: '20px',
+                  zIndex: 1500,
+                  width: '48px', // Twice the default size (48px)
+                  height: '48px', // Same as width for a circular shape
+                  borderRadius: '50%', // Makes the button circular
+                  minWidth: '0px', // Prevents default button minWidth from affecting the size
                 }}
-            >
-                {isStreetView ? 'Exit Street View' : 'Enter Street View'}
-            </Button>
+              >
+                {isStreetView ? <FontAwesomeIcon icon={faMap} size="2x" /> : <FontAwesomeIcon icon={faEye} size="2x" />}
+              </Button>
+              </>
+
+            )
+
+            }
+            
 
         </>
     );

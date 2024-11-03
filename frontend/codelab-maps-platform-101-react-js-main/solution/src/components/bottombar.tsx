@@ -1,7 +1,7 @@
 import React, { useState, ChangeEvent } from 'react';
 import { Box, TextField, List, ListItem, ListItemText, Typography, Slider, Button, FormControlLabel, Checkbox } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-
+import { Dispatch, SetStateAction } from 'react';
 interface SearchResult {
     displayName: string;
     latitude: string;
@@ -35,9 +35,10 @@ interface BottomBarProps {
     setMapCenter: (latitude: number, longitude: number) => void;
     setRadius: (radius: number) => void;
     radius: number;
+    setShowButtons: Dispatch<SetStateAction<boolean>>;
 }
 
-const BottomBar: React.FC<BottomBarProps> = ({ setMapCenter, setRadius, radius }) => {
+const BottomBar: React.FC<BottomBarProps> = ({ setMapCenter, setRadius, radius, setShowButtons }) => {
     const [focused, setFocused] = useState<boolean>(false);
     const [searchingFocus, setSearchingFocus] = useState<boolean>(false);
     const [query, setQuery] = useState<string>('');
@@ -53,6 +54,7 @@ const BottomBar: React.FC<BottomBarProps> = ({ setMapCenter, setRadius, radius }
         setSearchingFocus(false);
         setFocused(false);
         setShowOptions(false); // Reset options view when canceled
+        setShowButtons(true);
     };
 
     const handleNext = () => {
@@ -128,7 +130,7 @@ const BottomBar: React.FC<BottomBarProps> = ({ setMapCenter, setRadius, radius }
                 backgroundColor: '#fff',
                 boxShadow: '0 -2px 5px rgba(0,0,0,0.1)',
                 padding: '10px 20px',
-                paddingBottom: focused ? (searchingFocus ? '140%' : (!showOptions ? '40%' : '5%')) : '10px',
+                paddingBottom: focused ? (searchingFocus ? '140%' : (!showOptions ? '25%' : '5%')) : '10px',
                 justifyContent: 'center',
                 alignItems: 'center',
                 borderRadius: '30px',
@@ -136,7 +138,7 @@ const BottomBar: React.FC<BottomBarProps> = ({ setMapCenter, setRadius, radius }
 
                 zIndex: 1,
             }}
-            onFocus={() => setFocused(true)}
+            onFocus={() => {setFocused(true); setShowButtons(false);}}
             tabIndex={-1}
         >
             {!showOptions ? (
@@ -210,7 +212,6 @@ const BottomBar: React.FC<BottomBarProps> = ({ setMapCenter, setRadius, radius }
                             display: 'flex',
                             flexDirection: 'column',
                         }}>
-                            <Typography gutterBottom>Select a Distance:</Typography>
                             <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', flexDirection: 'row' }}>
                                 <Slider
                                     value={radius}
