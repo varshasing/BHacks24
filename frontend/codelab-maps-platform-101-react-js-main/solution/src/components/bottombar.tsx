@@ -63,7 +63,7 @@ const BottomBar: React.FC<BottomBarProps> = ({ mapCenter, setMapCenter, setRadiu
 
     const handleSearchOptions = () => {
         if (mapCenter) {
-            updateLocationPins(selectedOptions[0], mapCenter.lat, mapCenter.lng, radius, setLocations);
+            updateLocationPins(selectedOptions[0], mapCenter.lat, mapCenter.lng, radius/2.0, setLocations);
         }
         handleCancel();
     };
@@ -202,7 +202,7 @@ const BottomBar: React.FC<BottomBarProps> = ({ mapCenter, setMapCenter, setRadiu
                                 sx={{ flexGrow: 1 }}
                             />
                             <Typography id="radius-slider" sx={{ ml: 2 }}>
-                                {radius + "km"}
+                                {radius/2 + "mi"}
                             </Typography>
                         </Box>
                         <Box sx={{

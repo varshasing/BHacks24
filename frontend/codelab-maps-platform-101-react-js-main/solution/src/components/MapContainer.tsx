@@ -178,7 +178,7 @@ const MapContainer: React.FC<MapContainerProps> = ({ locations, updateLocationPi
                 {center && (
                     <Circle
                         center={center}
-                        radius={radius * 1000} // Convert km to meters
+                        radius={radius * 1609.34 / 2} // Convert km to meters
                         options={{
                             strokeColor: '#0c4cb3',
                             strokeOpacity: 0.8,
